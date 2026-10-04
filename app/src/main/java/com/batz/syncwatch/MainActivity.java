@@ -4,6 +4,24 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.content.res.Configuration;
+import android.content.pm.ActivityInfo;
+import android.view.ViewGroup;
+
+import android.widget.FrameLayout;
+import androidx.appcompat.app.AlertDialog;
+import androidx.activity.OnBackPressedCallback;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.media3.common.MimeTypes;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Collections;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,16 +50,27 @@ import java.util.UUID;
 
 @UnstableApi
 public final class MainActivity extends AppCompatActivity {
-    private static final int PICK_VIDEO = 10;
+    private static final int PICK_VIDEO = 10, PICK_SUBTITLE = 11;
+    private String connectHost = "syncplay.pl";
+    private int connectPort = 8997;
+    private boolean requireSecure = true;
+    private boolean fullscreen;
+    private FrameLayout screen, videoHost;
+    private ScrollView scroll;
+    private Button subtitleButton;
+    private String subtitleSource, subtitleMime, subtitleName;
+    private long subtitleOffset;
+    private int subtitleRevision;
+
     private final Handler main = new Handler(Looper.getMainLooper());
     private ExoPlayer player;
     private SyncProtocol protocol;
     private SyncConnection connection;
     private int generation;
     private boolean connected, applyingRemote, firstState = true;
-    private EditText server, port, name, room, message;
-    private TextView status, media, participants, chat;
-    private CheckBox requireTls, ready;
+    private EditText name, room;
+    private TextView status, media, participants;
+    private CheckBox ready;
     private Button connect;
     private SharedPreferences prefs;
     private String filename = "Vídeo local";
@@ -55,84 +84,82 @@ public final class MainActivity extends AppCompatActivity {
         super.onCreate(saved);
         prefs = getSharedPreferences("settings", MODE_PRIVATE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        ScrollView scroll = new ScrollView(this);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        screen = new FrameLayout(this);
+        screen.setBackgroundColor(Color.BLACK);
+        scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(20), dp(12), dp(20), dp(24));
-        root.setBackgroundColor(Color.rgb(16, 24, 39));
-        // Android 15 edge-to-edge: retain system-bar and keyboard insets.
-        root.setOnApplyWindowInsetsListener((view, insets) -> {
-            root.setPadding(dp(20) + insets.getSystemWindowInsetLeft(),
-                    dp(12) + insets.getSystemWindowInsetTop(),
-                    dp(20) + insets.getSystemWindowInsetRight(),
-                    dp(24) + insets.getSystemWindowInsetBottom());
+        root.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,
+                new int[]{Color.rgb(18, 24, 38), Color.rgb(9, 13, 24)}));
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(screen, (view, insets) -> {
+            androidx.core.graphics.Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
+            root.setPadding(dp(24) + bars.left, dp(20) + bars.top, dp(24) + bars.right, dp(32) + bars.bottom);
             return insets;
         });
         scroll.addView(root);
-        setContentView(scroll);
-        TextView title = text("SyncWatch", 30);
-        title.setTextColor(Color.rgb(110, 231, 183));
-        text("Seu vídeo. Sua sala. Assistam juntos.", 16);
-        text("Cada pessoa abre a mesma cópia do vídeo e entra no mesmo servidor e sala.", 14);
+        screen.addView(scroll, new FrameLayout.LayoutParams(-1, -1));
+        setContentView(screen);
+        TextView brand = text("S Y N C W A T C H", 13);
+        brand.setTextColor(Color.rgb(124, 232, 205));
+        TextView title = text("Um filme.\nA mesma companhia.", 30);
+        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        text("Escolha seu vídeo e encontrem-se na mesma sala.", 14);
         player = new ExoPlayer.Builder(this).build();
         playerView = new PlayerView(this);
         playerView.setPlayer(player);
         playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING);
         playerView.setKeepScreenOn(true);
-        root.addView(playerView, new LinearLayout.LayoutParams(-1, dp(220)));
-        media = text("Nenhum vídeo selecionado", 14);
-        button("Escolher vídeo do aparelho", view -> {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            intent.setType("video/*");
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-            startActivityForResult(intent, PICK_VIDEO);
-        });
-        text("Conectar à sala", 21);
-        server = field("Servidor", prefs.getString("server", "syncplay.pl"));
-        port = field("Porta", prefs.getString("port", "8997"));
-        port.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        playerView.setControllerShowTimeoutMs(2500);
+        playerView.setShowNextButton(false);
+        playerView.setShowPreviousButton(false);
+        playerView.setShowSubtitleButton(true);
+        playerView.setFullscreenButtonClickListener(value -> setFullscreen(value, true));
+        videoHost = new FrameLayout(this);
+        videoHost.setBackground(shape(Color.rgb(4, 7, 13), 20));
+        videoHost.setClipToOutline(true);
+        videoHost.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
+        LinearLayout.LayoutParams videoParams = new LinearLayout.LayoutParams(-1, dp(210));
+        videoParams.setMargins(0, dp(20), 0, dp(8));
+        root.addView(videoHost, videoParams);
+        media = text("Seu vídeo aparecerá aqui", 13);
+        button("Escolher vídeo", view -> pick("video/*", PICK_VIDEO), true);
+        subtitleButton = button("Adicionar legenda · SRT ou VTT", view -> subtitleMenu(), false);
+        button("Assistir em tela cheia", view -> setFullscreen(true, true), false);
+        text("Sua sala", 23).setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         name = field("Seu nome", prefs.getString("name", "Batz"));
         room = field("Nome da sala", prefs.getString("room", "SyncWatch-" + UUID.randomUUID().toString().substring(0, 8)));
-        requireTls = new CheckBox(this);
-        requireTls.setText("Exigir conexão criptografada (TLS)");
-        requireTls.setChecked(prefs.getBoolean("tls", false));
-        root.addView(requireTls);
         connect = button("Entrar na sala", view -> {
-            if (connection != null) disconnect("Desconectado"); else join();
-        });
-        status = text("Desconectado · reprodução local disponível", 14);
-        participants = text("Participantes aparecerão aqui", 14);
+            if (connection != null) disconnect("Você saiu da sala"); else join();
+        }, true);
+        status = text("Pronto para uma sessão?", 13);
+        status.setTextColor(Color.rgb(124, 232, 205));
         ready = new CheckBox(this);
-        ready.setText("Estou pronto para assistir");
+        ready.setText("Estou pronto");
+        ready.setTextSize(15);
         ready.setEnabled(false);
         root.addView(ready);
         ready.setOnCheckedChangeListener((button, checked) -> {
             if (protocol != null) protocol.ready(checked);
         });
-        button("Compartilhar dados da sala", view -> {
+        participants = text("Quem entrar na sala aparecerá aqui.", 13);
+        participants.setPadding(dp(16), dp(16), dp(16), dp(16));
+        participants.setBackground(shape(Color.rgb(26, 34, 49), 16));
+        button("Convidar alguém", view -> {
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setType("text/plain");
-            intent.putExtra(Intent.EXTRA_TEXT, "Vamos assistir no SyncWatch/Syncplay!\nServidor: "
-                    + server.getText() + ":" + port.getText() + "\nSala: " + room.getText()
-                    + "\nAbra a mesma cópia do vídeo no seu aparelho.");
-            startActivity(Intent.createChooser(intent, "Compartilhar sala"));
-        });
-        text("Conversa da sala", 21);
-        chat = text("", 14);
-        message = field("Mensagem", "");
-        message.setMaxLines(3);
-        button("Enviar mensagem", view -> {
-            String content = message.getText().toString().trim();
-            if (!connected) { toast("Entre na sala para conversar"); return; }
-            if (!content.isEmpty()) {
-                if (content.length() > 500) { toast("Use até 500 caracteres"); return; }
-                protocol.chat(content);
-                message.setText("");
+            intent.putExtra(Intent.EXTRA_TEXT, "Vamos assistir no SyncWatch!\nSala: " + room.getText()
+                    + "\nAbra sua cópia do mesmo vídeo e entre na sala.\nPara Syncplay no computador: syncplay.pl:8997");
+            startActivity(Intent.createChooser(intent, "Convidar para a sala"));
+        }, false);
+        text("Cada pessoa usa sua cópia do vídeo. Play, pausa e saltos são sincronizados; legendas são ajustadas só neste aparelho.", 12);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() {
+                if (fullscreen) setFullscreen(false, true);
+                else { setEnabled(false); getOnBackPressedDispatcher().onBackPressed(); setEnabled(true); }
             }
         });
-        text("Play, pausa e saltos no player são compartilhados. Ao sair do app, a reprodução é pausada. O vídeo não é enviado ao servidor.", 13);
         player.addListener(new Player.Listener() {
             @Override public void onPlayWhenReadyChanged(boolean value, int reason) {
                 updateLocal();
@@ -172,22 +199,18 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     private void join() {
-        String host = server.getText().toString().trim();
+        String host = connectHost;
         String user = name.getText().toString().trim();
         String roomName = room.getText().toString().trim();
-        int number;
-        try { number = Integer.parseInt(port.getText().toString()); }
-        catch (NumberFormatException e) { toast("Informe uma porta de 1 a 65535"); return; }
-        if (host.isEmpty() || host.contains("://") || host.contains("/") || host.contains(" ") ||
-                user.isEmpty() || roomName.isEmpty() || number < 1 || number > 65535 ||
-                user.length() > 100 || roomName.length() > 100) {
-            toast("Confira o servidor (sem https://), porta, nome e sala (até 100 caracteres)"); return;
+        int number = connectPort;
+        if (user.isEmpty() || roomName.isEmpty() || user.length() > 100 || roomName.length() > 100) {
+            toast("Preencha seu nome e a sala (até 100 caracteres)"); return;
         }
         saveSettings();
         firstState = true;
         connected = false;
         setFieldsEnabled(false);
-        status.setText("Conectando a " + host + ":" + number + "…");
+        status.setText("Encontrando sua sala…");
         connect.setText("Cancelar conexão");
         int token = ++generation;
         final boolean[] encrypted = {false};
@@ -199,7 +222,6 @@ public final class MainActivity extends AppCompatActivity {
                 status.setText("Conectado como " + assignedName + (encrypted[0] ? " · TLS" : " · sem criptografia"));
                 connect.setText("Sair da sala");
                 ready.setEnabled(loaded);
-                appendChat("Você entrou na sala " + roomName + ". Marque pronto quando abrir o vídeo.");
             }
             public void remote(double seconds, boolean paused, boolean seek, double latency) {
                 if (token != generation || !loaded) return;
@@ -215,7 +237,7 @@ public final class MainActivity extends AppCompatActivity {
                 } finally { applyingRemote = false; }
             }
             public void participants(String value) { if (token == generation) participants.setText(value); }
-            public void chat(String value) { if (token == generation) appendChat(value); }
+            public void chat(String value) { /* Chat is not part of the viewing interface. */ }
             public void error(String value) { if (token == generation) disconnect("Erro: " + value); }
         });
         updateLocal();
@@ -233,7 +255,7 @@ public final class MainActivity extends AppCompatActivity {
             }
             public void failed(String value) { if (token == generation) disconnect("Conexão encerrada: " + value); }
         });
-        connection.connect(host, number, requireTls.isChecked());
+        connection.connect(host, number, requireSecure);
     }
 
     private void updateLocal() {
@@ -274,6 +296,7 @@ public final class MainActivity extends AppCompatActivity {
             ready.setChecked(false);
             applyingRemote = true;
             player.pause();
+            clearSubtitle();
             player.setMediaItem(MediaItem.fromUri(uri), Math.max(0, position));
             loaded = true;
             firstState = true;
@@ -296,14 +319,14 @@ public final class MainActivity extends AppCompatActivity {
 
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
-        if (request == PICK_VIDEO && result == RESULT_OK && data != null && data.getData() != null) {
+        if ((request == PICK_VIDEO || request == PICK_SUBTITLE) && result == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
             try {
                 if ((data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION) != 0)
                     getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             }
             catch (SecurityException ignored) { }
-            openVideo(uri, 0);
+            if (request == PICK_VIDEO) openVideo(uri, 0); else loadSubtitle(uri);
         }
     }
 
@@ -334,35 +357,162 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     private void saveSettings() {
-        prefs.edit().putString("server", server.getText().toString().trim())
-                .putString("port", port.getText().toString()).putString("name", name.getText().toString().trim())
-                .putString("room", room.getText().toString().trim()).putBoolean("tls", requireTls.isChecked()).apply();
+        prefs.edit().putString("name", name.getText().toString().trim())
+                .putString("room", room.getText().toString().trim()).apply();
     }
     private void setFieldsEnabled(boolean value) {
-        server.setEnabled(value); port.setEnabled(value); name.setEnabled(value); room.setEnabled(value);
-        requireTls.setEnabled(value);
+        name.setEnabled(value); room.setEnabled(value);
     }
-    private void appendChat(String value) {
-        String content = chat.getText() + (chat.length() == 0 ? "" : "\n") + value;
-        if (content.length() > 6000) content = content.substring(content.length() - 6000);
-        chat.setText(content);
+    private void pick(String mime, int request) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType(mime);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        startActivityForResult(intent, request);
+    }
+    private void setFullscreen(boolean value, boolean rotate) {
+        if (fullscreen != value) {
+            fullscreen = value;
+            ((ViewGroup) playerView.getParent()).removeView(playerView);
+            if (value) {
+                scroll.setVisibility(View.GONE);
+                screen.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
+            } else {
+                screen.removeView(playerView);
+                scroll.setVisibility(View.VISIBLE);
+                videoHost.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
+            }
+        }
+        playerView.setFullscreenButtonState(value);
+        WindowInsetsControllerCompat bars = WindowCompat.getInsetsController(getWindow(), screen);
+        bars.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        if (value) bars.hide(WindowInsetsCompat.Type.systemBars());
+        else bars.show(WindowInsetsCompat.Type.systemBars());
+        if (rotate) setRequestedOrientation(value ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+    }
+    @Override public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        setFullscreen(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE, false);
+    }
+    private void subtitleMenu() {
+        if (!loaded) { toast("Escolha o vídeo primeiro"); return; }
+        if (subtitleSource == null) { pick("*/*", PICK_SUBTITLE); return; }
+        new AlertDialog.Builder(this).setTitle("Legenda · " + subtitleName)
+                .setItems(new String[]{"Escolher outra legenda", "Ajustar tempo (" + subtitleOffset + " ms)", "Remover legenda"},
+                        (dialog, which) -> {
+                            if (which == 0) pick("*/*", PICK_SUBTITLE);
+                            else if (which == 1) subtitleTiming();
+                            else { clearSubtitle(); refreshSubtitles(); }
+                        }).show();
+    }
+    private void subtitleTiming() {
+        EditText input = new EditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+        input.setText(String.valueOf(subtitleOffset));
+        input.setPadding(dp(24), dp(16), dp(24), dp(16));
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Ajustar tempo da legenda")
+                .setMessage("Milissegundos: +500 atrasa meio segundo; -500 adianta meio segundo.")
+                .setView(input).setNegativeButton("Cancelar", null).setPositiveButton("Aplicar", null).create();
+        dialog.setOnShowListener(ignored -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            try {
+                long offset = Long.parseLong(input.getText().toString().trim());
+                if (offset < -600000 || offset > 600000) { toast("Use um ajuste entre -600000 e 600000 ms"); return; }
+                subtitleOffset = offset;
+                refreshSubtitles();
+                dialog.dismiss();
+            } catch (NumberFormatException error) { toast("Digite um número em milissegundos"); }
+        }));
+        dialog.show();
+    }
+    private void loadSubtitle(Uri uri) {
+        try {
+            String label = uri.getLastPathSegment();
+            try (Cursor cursor = getContentResolver().query(uri, new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) label = cursor.getString(0);
+            }
+            if (label == null) throw new IllegalArgumentException();
+            String extension = label.toLowerCase(java.util.Locale.ROOT);
+            if (!extension.endsWith(".srt") && !extension.endsWith(".vtt")) {
+                toast("Escolha uma legenda .srt ou .vtt em UTF-8"); return;
+            }
+            byte[] bytes;
+            try (InputStream input = getContentResolver().openInputStream(uri)) {
+                if (input == null) throw new IllegalArgumentException();
+                java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+                byte[] buffer = new byte[8192]; int count;
+                while ((count = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, count);
+                    if (output.size() > 2 * 1024 * 1024) break;
+                }
+                bytes = output.toByteArray();
+            }
+            if (bytes.length > 2 * 1024 * 1024) { toast("Use uma legenda de até 2 MB"); return; }
+            String source = new String(bytes, StandardCharsets.UTF_8).replace("\uFEFF", "");
+            if (!source.contains("-->")) { toast("O arquivo não contém tempos de legenda válidos"); return; }
+            subtitleName = label;
+            subtitleMime = extension.endsWith(".srt") ? MimeTypes.APPLICATION_SUBRIP : MimeTypes.TEXT_VTT;
+            subtitleSource = source;
+            subtitleOffset = 0;
+            refreshSubtitles();
+        } catch (Exception error) { toast("Não foi possível ler a legenda. Escolha outro arquivo."); }
+    }
+    private void clearSubtitle() {
+        subtitleSource = null;
+        subtitleOffset = 0;
+        subtitleButton.setText("Adicionar legenda · SRT ou VTT");
+    }
+    private void refreshSubtitles() {
+        MediaItem current = player.getCurrentMediaItem();
+        if (current == null || current.localConfiguration == null) return;
+        try {
+            MediaItem.Builder item = current.buildUpon().setSubtitleConfigurations(Collections.emptyList());
+            if (subtitleSource != null) {
+                File next = new File(getCacheDir(), "subtitle-" + (++subtitleRevision) + "." + (MimeTypes.TEXT_VTT.equals(subtitleMime) ? "vtt" : "srt"));
+                Files.write(next.toPath(), SubtitleTiming.shift(subtitleSource, subtitleOffset).getBytes(StandardCharsets.UTF_8));
+                item.setSubtitleConfigurations(Collections.singletonList(new MediaItem.SubtitleConfiguration.Builder(Uri.fromFile(next))
+                        .setMimeType(subtitleMime).setLabel(subtitleName).setSelectionFlags(C.SELECTION_FLAG_DEFAULT).build()));
+
+            }
+            long position = player.getCurrentPosition();
+            boolean playing = player.getPlayWhenReady();
+            applyingRemote = true;
+            try {
+                player.setMediaItem(item.build(), position);
+                player.prepare();
+                player.setPlayWhenReady(playing);
+            } finally { applyingRemote = false; }
+            if (subtitleSource != null) subtitleButton.setText("Legenda · " + subtitleName + " · " + subtitleOffset + " ms");
+        } catch (Exception error) { toast("Não foi possível aplicar a legenda"); }
     }
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
     private void toast(String value) { Toast.makeText(this, value, Toast.LENGTH_LONG).show(); }
+    private GradientDrawable shape(int color, int radius) {
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(color); background.setCornerRadius(dp(radius)); return background;
+    }
     private TextView text(String value, int size) {
         TextView view = new TextView(this);
-        view.setText(value); view.setTextSize(size); view.setTextColor(Color.rgb(229, 231, 235));
-        view.setPadding(0, dp(7), 0, dp(7)); root.addView(view); return view;
+        view.setText(value); view.setTextSize(size); view.setTextColor(Color.rgb(225, 231, 241));
+        view.setPadding(0, dp(8), 0, dp(8)); root.addView(view); return view;
     }
     private EditText field(String label, String value) {
-        text(label, 13);
+        text(label, 12);
         EditText view = new EditText(this);
         view.setHint(label); view.setText(value); view.setTextSize(16); view.setSingleLine(true);
-        view.setPadding(dp(8), dp(4), dp(8), dp(4));
-        view.setMinimumHeight(dp(48)); root.addView(view, new LinearLayout.LayoutParams(-1, -2)); return view;
+        view.setPadding(dp(16), dp(12), dp(16), dp(12));
+        view.setBackground(shape(Color.rgb(26, 34, 49), 14));
+        view.setMinimumHeight(dp(52)); root.addView(view, new LinearLayout.LayoutParams(-1, -2)); return view;
     }
-    private Button button(String label, View.OnClickListener listener) {
-        Button view = new Button(this); view.setText(label); view.setAllCaps(false);
-        view.setOnClickListener(listener); root.addView(view, new LinearLayout.LayoutParams(-1, -2)); return view;
+    private Button button(String label, View.OnClickListener listener, boolean primary) {
+        Button view = new Button(this); view.setText(label); view.setAllCaps(false); view.setTextSize(15);
+        view.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        view.setTextColor(primary ? Color.rgb(9, 25, 27) : Color.rgb(217, 228, 239));
+        view.setBackgroundTintList(null);
+        view.setBackground(shape(primary ? Color.rgb(124, 232, 205) : Color.rgb(26, 34, 49), 16));
+        view.setMinHeight(dp(50)); view.setPadding(dp(16), dp(10), dp(16), dp(10));
+        view.setOnClickListener(listener);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
+        params.setMargins(0, dp(8), 0, dp(4));
+        root.addView(view, params); return view;
     }
 }
