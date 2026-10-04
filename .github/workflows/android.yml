@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: android-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -32,6 +32,29 @@ jobs:
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Test, lint and build installable APK
         run: gradle --no-daemon testDebugUnitTest lintDebug assembleDebug
+      - name: Create synthetic playback fixture
+        run: |
+          mkdir -p app/src/androidTest/assets
+          ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc=size=160x90:rate=15 -f lavfi -i sine=frequency=440:sample_rate=44100 -t 20 -c:v libx264 -pix_fmt yuv420p -c:a aac app/src/androidTest/assets/sync-test.mp4
+      - name: Verify playback on Android emulator
+        # Hardware acceleration is enabled only inside the disposable CI runner.
+        # The following step prepares /dev/kvm before emulator startup.
+        run: |
+          sudo chown "$USER" /dev/kvm
+      - name: Run playback integration test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            gradle --no-daemon connectedDebugAndroidTest
+            adb shell pm clear com.batz.syncwatch
+            adb shell am start -n com.batz.syncwatch/.MainActivity
+            sleep 2
+            adb shell screencap -p /sdcard/syncwatch.png
+            adb pull /sdcard/syncwatch.png app/build/reports/syncwatch.png
       - name: Verify and package APK
         run: |
           mkdir -p dist
