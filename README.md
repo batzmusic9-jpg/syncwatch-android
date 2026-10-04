@@ -8,7 +8,7 @@ Vídeos locais sincronizados pelo protocolo Syncplay. Android 8.0 ou superior.
 2. Instale o APK. A assinatura de debug muda entre runners; se houver conflito com a versão anterior, desinstale-a antes.
 3. Cada pessoa escolhe sua cópia do mesmo vídeo, informa seu nome e usa o mesmo nome de sala.
 4. Toque **Entrar na sala** e **Estou pronto**. Play, pausa e saltos são sincronizados.
-5. Use **Assistir em tela cheia**, o ícone no player ou gire o aparelho na horizontal. Voltar ou o ícone do player sai de tela cheia.
+5. Use **Tela cheia**, o ícone no player ou gire o aparelho na horizontal. Voltar ou o ícone do player sai de tela cheia.
 
 O serviço `syncplay.pl:8997` é configurado internamente e usa TLS com certificado e hostname verificados. Não há campos de servidor/porta nem chat. Para participar pelo Syncplay no computador, use esse serviço e a mesma sala. O vídeo não é transmitido; cada pessoa precisa de uma cópia de duração idêntica. Prontidão informa o estado, sem bloquear play.
 
