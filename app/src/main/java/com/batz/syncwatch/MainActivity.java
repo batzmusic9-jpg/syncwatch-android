@@ -103,7 +103,7 @@ public final class MainActivity extends AppCompatActivity {
         setContentView(screen);
         TextView brand = text("S Y N C W A T C H", 13);
         brand.setTextColor(Color.rgb(124, 232, 205));
-        TextView title = text("Um filme.\nA mesma companhia.", 30);
+        TextView title = text("Cinema em companhia.", 24);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         text("Escolha seu vídeo e encontrem-se na mesma sala.", 14);
         player = new ExoPlayer.Builder(this).build();
@@ -125,8 +125,19 @@ public final class MainActivity extends AppCompatActivity {
         root.addView(videoHost, videoParams);
         media = text("Seu vídeo aparecerá aqui", 13);
         button("Escolher vídeo", view -> pick("video/*", PICK_VIDEO), true);
-        subtitleButton = button("Adicionar legenda · SRT ou VTT", view -> subtitleMenu(), false);
-        button("Assistir em tela cheia", view -> setFullscreen(true, true), false);
+        subtitleButton = button("Adicionar legenda", view -> subtitleMenu(), false);
+        Button fullscreenButton = button("Tela cheia", view -> setFullscreen(true, true), false);
+        root.removeView(subtitleButton);
+        root.removeView(fullscreenButton);
+        LinearLayout tools = new LinearLayout(this);
+        tools.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams left = new LinearLayout.LayoutParams(0, -2, 1);
+        left.setMargins(0, dp(8), dp(4), dp(4));
+        LinearLayout.LayoutParams right = new LinearLayout.LayoutParams(0, -2, 1);
+        right.setMargins(dp(4), dp(8), 0, dp(4));
+        tools.addView(subtitleButton, left);
+        tools.addView(fullscreenButton, right);
+        root.addView(tools);
         text("Sua sala", 23).setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         name = field("Seu nome", prefs.getString("name", "Batz"));
         room = field("Nome da sala", prefs.getString("room", "SyncWatch-" + UUID.randomUUID().toString().substring(0, 8)));
@@ -196,6 +207,8 @@ public final class MainActivity extends AppCompatActivity {
             String previous = prefs.getString("video", null);
             if (previous != null) openVideo(Uri.parse(previous), prefs.getLong("position", 0));
         }
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            setFullscreen(true, false);
     }
 
     private void join() {
@@ -459,7 +472,7 @@ public final class MainActivity extends AppCompatActivity {
     private void clearSubtitle() {
         subtitleSource = null;
         subtitleOffset = 0;
-        subtitleButton.setText("Adicionar legenda · SRT ou VTT");
+        subtitleButton.setText("Adicionar legenda");
     }
     private void refreshSubtitles() {
         MediaItem current = player.getCurrentMediaItem();
@@ -481,7 +494,7 @@ public final class MainActivity extends AppCompatActivity {
                 player.prepare();
                 player.setPlayWhenReady(playing);
             } finally { applyingRemote = false; }
-            if (subtitleSource != null) subtitleButton.setText("Legenda · " + subtitleName + " · " + subtitleOffset + " ms");
+            if (subtitleSource != null) subtitleButton.setText("Legenda · " + subtitleOffset + " ms");
         } catch (Exception error) { toast("Não foi possível aplicar a legenda"); }
     }
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
