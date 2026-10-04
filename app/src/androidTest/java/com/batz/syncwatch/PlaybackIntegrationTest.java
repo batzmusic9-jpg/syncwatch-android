@@ -5,6 +5,9 @@ import android.os.SystemClock;
 import android.widget.Button;
 import android.widget.EditText;
 import androidx.media3.common.Player;
+import androidx.media3.common.text.CueGroup;
+import android.view.View;
+import android.widget.ScrollView;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.test.core.app.ActivityScenario;
@@ -31,6 +34,14 @@ import static org.junit.Assert.*;
 @UnstableApi
 @RunWith(AndroidJUnit4.class)
 public class PlaybackIntegrationTest {
+    private static void setField(MainActivity activity, String name, Object value) {
+        try { Field f = MainActivity.class.getDeclaredField(name); f.setAccessible(true); f.set(activity, value); }
+        catch (Exception e) { throw new AssertionError(e); }
+    }
+    private static void invoke(MainActivity activity, String name, Class<?>[] types, Object... args) {
+        try { Method m = MainActivity.class.getDeclaredMethod(name, types); m.setAccessible(true); m.invoke(activity, args); }
+        catch (Exception e) { throw new AssertionError(e); }
+    }
     private static Object field(MainActivity activity, String name) {
         try { Field f = MainActivity.class.getDeclaredField(name); f.setAccessible(true); return f.get(activity); }
         catch (Exception e) { throw new AssertionError(e); }
@@ -97,8 +108,9 @@ public class PlaybackIntegrationTest {
             });
             waitUntilReady(scenario);
             scenario.onActivity(a -> {
-                ((EditText) field(a, "server")).setText("127.0.0.1");
-                ((EditText) field(a, "port")).setText(String.valueOf(server.getLocalPort()));
+                setField(a, "connectHost", "127.0.0.1");
+                setField(a, "connectPort", server.getLocalPort());
+                setField(a, "requireSecure", false);
                 ((EditText) field(a, "name")).setText("Android-test");
                 ((EditText) field(a, "room")).setText("test-room");
                 ((Button) field(a, "connect")).performClick();
@@ -141,6 +153,59 @@ public class PlaybackIntegrationTest {
                 if (peer != null) peer.close();
                 simulated.join(2000);
             }
+        }
+    }
+
+    @Test public void externalSubtitlesRenderAndFullscreenKeepsPlayer() throws Exception {
+        File video = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir(), "subtitle-video.mp4");
+        try (InputStream input = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("sync-test.mp4");
+             FileOutputStream output = new FileOutputStream(video)) {
+            byte[] bytes = new byte[8192]; int count;
+            while ((count = input.read(bytes)) != -1) output.write(bytes, 0, count);
+        }
+        File subtitle = new File(video.getParentFile(), "test.srt");
+        try (FileOutputStream output = new FileOutputStream(subtitle)) {
+            output.write("1\n00:00:00,000 --> 00:00:18,000\nLegenda de teste\n".getBytes(StandardCharsets.UTF_8));
+        }
+        AtomicBoolean visibleCue = new AtomicBoolean();
+        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(a -> invoke(a, "openVideo", new Class<?>[]{Uri.class, long.class}, Uri.fromFile(video), 0L));
+            waitUntilReady(scenario);
+            scenario.onActivity(a -> {
+                player(a).addListener(new Player.Listener() {
+                    @Override public void onCues(CueGroup group) {
+                        for (androidx.media3.common.text.Cue cue : group.cues)
+                            if (cue.text != null && cue.text.toString().contains("Legenda de teste")) visibleCue.set(true);
+                    }
+                });
+                invoke(a, "loadSubtitle", new Class<?>[]{Uri.class}, Uri.fromFile(subtitle));
+            });
+            waitUntilReady(scenario);
+            scenario.onActivity(a -> { player(a).seekTo(4000); player(a).play(); });
+            for (int i = 0; i < 80 && !visibleCue.get(); i++) SystemClock.sleep(100);
+            assertTrue("External subtitle must produce a rendered cue", visibleCue.get());
+            scenario.onActivity(a -> {
+                player(a).pause();
+                ExoPlayer before = player(a);
+                long position = before.getCurrentPosition();
+                invoke(a, "setFullscreen", new Class<?>[]{boolean.class, boolean.class}, true, false);
+                assertEquals(View.GONE, ((ScrollView) field(a, "scroll")).getVisibility());
+                assertSame(field(a, "screen"), ((View) field(a, "playerView")).getParent());
+                assertSame(before, player(a));
+                assertEquals(position, player(a).getCurrentPosition(), 100);
+                invoke(a, "setFullscreen", new Class<?>[]{boolean.class, boolean.class}, false, false);
+                assertEquals(View.VISIBLE, ((ScrollView) field(a, "scroll")).getVisibility());
+                assertSame(field(a, "videoHost"), ((View) field(a, "playerView")).getParent());
+                setField(a, "subtitleOffset", 500L);
+                invoke(a, "refreshSubtitles", new Class<?>[]{});
+                assertEquals(position, player(a).getCurrentPosition(), 100);
+            });
+            waitUntilReady(scenario);
+            scenario.onActivity(a -> {
+                invoke(a, "clearSubtitle", new Class<?>[]{});
+                invoke(a, "refreshSubtitles", new Class<?>[]{});
+                assertTrue(player(a).getCurrentMediaItem().localConfiguration.subtitleConfigurations.isEmpty());
+            });
         }
     }
 }
