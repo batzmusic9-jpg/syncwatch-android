@@ -36,6 +36,6 @@ O workflow configura as ferramentas, executa testes de protocolo e conexão TCP 
 
 ## Validação
 
-Os testes automatizados cobrem confirmação de estado, prevenção de sobrescrita de comandos locais, seek remoto, heartbeat sem vídeo, prontidão/lista de sala, chat, cálculos de posição, negociação TLS e comunicação por socket real em localhost. O build sozinho não comprova a precisão em dois aparelhos físicos. Faça um teste com duas cópias do mesmo arquivo e os dois aparelhos na mesma sala, validando play/pausa/seek dos dois lados.
+Os testes automatizados cobrem confirmação de estado, prevenção de sobrescrita de comandos locais, seek remoto, heartbeat sem vídeo, prontidão/lista de sala, chat, cálculos de posição, negociação TLS e comunicação por socket real em localhost. Um teste Android em emulador também abre um vídeo sintético, conecta a um servidor simulado e valida pause/seek remotos e comandos locais do player. O build sozinho não comprova a precisão em dois aparelhos físicos. Faça um teste com duas cópias do mesmo arquivo e os dois aparelhos na mesma sala, validando play/pausa/seek dos dois lados.
 
 Referências: [protocolo Syncplay](https://github.com/Syncplay/syncplay/blob/master/syncplay/protocols.py), [Media3](https://developer.android.com/media/media3/exoplayer/hello-world).
