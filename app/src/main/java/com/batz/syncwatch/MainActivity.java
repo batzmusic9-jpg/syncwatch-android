@@ -298,8 +298,10 @@ public final class MainActivity extends AppCompatActivity {
         super.onActivityResult(request, result, data);
         if (request == PICK_VIDEO && result == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
-            try { getContentResolver().takePersistableUriPermission(uri,
-                    data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION); }
+            try {
+                if ((data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION) != 0)
+                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
             catch (SecurityException ignored) { }
             openVideo(uri, 0);
         }
