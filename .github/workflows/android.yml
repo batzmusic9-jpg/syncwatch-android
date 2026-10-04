@@ -34,11 +34,11 @@ jobs:
         run: gradle --no-daemon testDebugUnitTest lintDebug assembleDebug
       - name: Create synthetic playback fixture
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
           mkdir -p app/src/androidTest/assets
           ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc=size=160x90:rate=15 -f lavfi -i sine=frequency=440:sample_rate=44100 -t 20 -c:v libx264 -pix_fmt yuv420p -c:a aac app/src/androidTest/assets/sync-test.mp4
-      - name: Verify playback on Android emulator
-        # Hardware acceleration is enabled only inside the disposable CI runner.
-        # The following step prepares /dev/kvm before emulator startup.
+      - name: Enable emulator acceleration
         run: |
           sudo chown "$USER" /dev/kvm
       - name: Run playback integration test
