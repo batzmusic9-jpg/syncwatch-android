@@ -1,41 +1,33 @@
-# SyncWatch Android
+# SyncWatch Android 1.1
 
-Assista a vídeos locais com outras pessoas, sincronizando reprodução pelo protocolo Syncplay.
-Android 8.0 ou superior. App nativo em Java, player Media3/ExoPlayer e seletor de documentos do Android.
+Vídeos locais sincronizados pelo protocolo Syncplay. Android 8.0 ou superior.
 
-## Instalar e usar
+## Instalar e assistir
 
-1. Baixe `SyncWatch-1.0.0.apk` do artefato `SyncWatch-APK` em uma execução bem-sucedida de **Actions → Android APK**.
-2. Autorize o Android a instalar o APK pelo navegador/gerenciador de arquivos utilizado.
-3. Cada pessoa escolhe sua própria cópia do mesmo vídeo. Não há transmissão ou upload do filme.
-4. Digitem o mesmo servidor (padrão `syncplay.pl`), porta `8997` e nome de sala. Cada pessoa usa um nome diferente.
-5. Entrem na sala, confiram os participantes, marquem **Estou pronto** e usem o player para play, pausa e saltos.
+1. Baixe `SyncWatch-1.1.0.apk` no artefato **SyncWatch-APK**, em **Actions → Android APK**.
+2. Instale o APK. A assinatura de debug muda entre runners; se houver conflito com a versão anterior, desinstale-a antes.
+3. Cada pessoa escolhe sua cópia do mesmo vídeo, informa seu nome e usa o mesmo nome de sala.
+4. Toque **Entrar na sala** e **Estou pronto**. Play, pausa e saltos são sincronizados.
+5. Use **Assistir em tela cheia**, o ícone no player ou gire o aparelho na horizontal. Voltar ou o ícone do player sai de tela cheia.
 
-Também pode participar alguém com Syncplay no computador. Use salas comuns; salas controladas, senhas de servidor e playlists compartilhadas não são suportadas nesta versão. A marcação de pronto informa o estado aos participantes; não bloqueia o play.
+O serviço `syncplay.pl:8997` é configurado internamente e usa TLS com certificado e hostname verificados. Não há campos de servidor/porta nem chat. Para participar pelo Syncplay no computador, use esse serviço e a mesma sala. O vídeo não é transmitido; cada pessoa precisa de uma cópia de duração idêntica. Prontidão informa o estado, sem bloquear play.
 
-## Funcionalidades
+## Legendas
 
-- Vídeos locais pelo seletor Android, sem permissão de acesso amplo ao armazenamento.
-- Play, pausa e seek compartilhados; correção de deriva a partir de um segundo e compensação de latência.
-- Lista de participantes, arquivo selecionado e prontidão; chat e compartilhamento dos dados da sala.
-- Negociação STARTTLS com validação de certificado e hostname. Se o servidor não oferecer TLS, a conexão comum é permitida, exceto quando **Exigir TLS** estiver marcado. O status mostra a proteção usada.
-- Dados de conexão e acesso ao último vídeo salvos no aparelho. Nenhuma senha ou vídeo é enviado ao servidor; ele recebe nome, sala, nome/tamanho/duração do arquivo e comandos/chat.
-- Ao ir para segundo plano, o app pausa a reprodução. Reconexão é manual pelo botão de entrar.
+Após abrir o vídeo, toque **Adicionar legenda** e escolha um arquivo `.srt` ou `.vtt` em UTF-8, de até 2 MB. O botão da legenda permite trocar, remover ou ajustar seu tempo em milissegundos: valores positivos atrasam e negativos adiantam. O ajuste afeta só este aparelho e preserva a posição do vídeo. O botão de legendas no player também permite selecionar/desativar trilhas. Ao trocar de vídeo, a legenda externa é removida; escolha-a novamente na próxima sessão.
 
-Formatos e codecs dependem do aparelho. MP4 com H.264/AAC é o formato recomendado para o primeiro teste. Para sincronização, mantenham cópias de duração idêntica. Legendas externas, streaming do arquivo e reprodução em segundo plano não estão incluídos.
+## Player e interface
 
-## Compilar
+Interface escura com botões arredondados, nome/sala, participantes e convite. Tela cheia imersiva com controles que somem durante a reprodução. A proporção original do filme é preservada, portanto filmes de outra proporção podem ter faixas pretas. Ao sair do app, o vídeo pausa; reconexão é manual. Codecs dependem do aparelho. Para testar, use MP4 H.264/AAC. Streaming, reprodução em segundo plano, playlists compartilhadas e salas controladas não estão incluídos.
 
-JDK 17, Android SDK 35, Gradle 8.11.1, Android Gradle Plugin 8.9.2.
+## Compilar e validar
+
+JDK 17, SDK 35, Gradle 8.11.1 e AGP 8.9.2.
 
 ```sh
 gradle --no-daemon testDebugUnitTest lintDebug assembleDebug
 ```
 
-O workflow configura as ferramentas, executa testes de protocolo e conexão TCP simulada, roda o lint, compila um APK universal assinado com chave de debug e verifica a assinatura com `apksigner`. A chave de debug do runner muda entre builds: se uma atualização informar conflito de assinatura, desinstale o APK anterior antes de instalar o novo. Este APK é para instalação direta e testes; publicação em loja requer assinatura de release própria.
+GitHub Actions executa testes de protocolo/TCP, testes de deslocamento de legendas, lint e build. No emulador Android 11, verifica play/pausa/seek nos dois sentidos, renderização de legenda externa, remoção/ajuste da legenda e transição de tela cheia preservando o player. O APK é universal, assinado com chave de debug para instalação direta e testes, com assinatura verificada por `apksigner`. A publicação em loja exige uma chave de release própria.
 
-## Validação
-
-Os testes automatizados cobrem confirmação de estado, prevenção de sobrescrita de comandos locais, seek remoto, heartbeat sem vídeo, prontidão/lista de sala, chat, cálculos de posição, negociação TLS e comunicação por socket real em localhost. Um teste Android em emulador também abre um vídeo sintético, conecta a um servidor simulado e valida pause/seek remotos e comandos locais do player. O build sozinho não comprova a precisão em dois aparelhos físicos. Faça um teste com duas cópias do mesmo arquivo e os dois aparelhos na mesma sala, validando play/pausa/seek dos dois lados.
-
-Referências: [protocolo Syncplay](https://github.com/Syncplay/syncplay/blob/master/syncplay/protocols.py), [Media3](https://developer.android.com/media/media3/exoplayer/hello-world).
+Referências: [Syncplay](https://github.com/Syncplay/syncplay/blob/master/syncplay/protocols.py), [Media3](https://developer.android.com/media/media3/exoplayer/media-items).
