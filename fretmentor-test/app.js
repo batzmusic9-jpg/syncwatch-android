@@ -21,7 +21,7 @@ const now=()=>performance.now()/1000;
 let state=loadState();
 let session=null,toastTimer=null;
 let audio={ctx:null,stream:null,source:null,gain:null,an:null,buf:null,running:false,noiseFloor:.001,candidate:null,candidateCount:0,lastAccepted:null,lastAcceptedAt:0,lastDetectedAt:0,lastRms:0,calibrating:false};
-let jam={on:true,master:null,noiseBuffer:null,timer:null,nextTime:0,step:0,bpm:82,currentChord:0};
+let jam={on:true,master:null,noiseBuffer:null,timer:null,nextTime:0,origin:0,step:0,bpm:82,currentChord:0};
 
 function loadState(){
   try{
@@ -251,7 +251,7 @@ function scheduleRhythmChord(ch,t,g=.025){
 function startJam(){
   if(!audio.ctx)return;
   stopJam();jam.master=audio.ctx.createGain();jam.master.gain.value=jam.on?state.settings.backing:0;jam.master.connect(audio.ctx.destination);
-  jam.noiseBuffer=makeNoiseBuffer();jam.nextTime=audio.ctx.currentTime+.08;jam.step=0;
+  jam.noiseBuffer=makeNoiseBuffer();jam.origin=audio.ctx.currentTime+.08;jam.nextTime=jam.origin;jam.step=0;
   const secondsPerHalfBeat=60/jam.bpm/2;
   const scheduler=()=>{
     if(!session||!audio.ctx)return;
@@ -331,11 +331,11 @@ function buildFocused(mode){
 function buildDiagnostic(){
   return[
     {type:'free',instruction:'Toque livremente.',hint:'Um minuto. Não tente impressionar o app.',seconds:55},
-    {type:'phrase',instruction:'Use só A, C e E.',hint:'Frases curtas.',allowed:[9,0,4],required:2,demo:[57,60,64,57]},
-    {type:'targetThird',instruction:'Termine na terça do acorde.',hint:'O tutor mede se você acompanha a harmonia.',required:3,demo:[60,57,64,59]},
-    {type:'rhythm',instruction:'Copie este ritmo.',hint:'Qualquer nota.',pattern:[0,1.5,3],required:5,demoRhythm:true},
-    {type:'find',instruction:'Encontre as notas pedidas.',hint:'Sem olhar shape.',targets:[60,64,69,72],required:4},
-    {type:'imitate',instruction:'Copie esta frase.',hint:'Ouça e reproduza.',sequence:[57,60,62,64,62,60,57],required:1},
+    {type:'phrase',instruction:'Use só A, C e E.',hint:'Frases curtas.',allowed:[9,0,4],required:2,maxSeconds:35,demo:[57,60,64,57]},
+    {type:'targetThird',instruction:'Termine na terça do acorde.',hint:'O tutor mede se você acompanha a harmonia.',required:3,maxSeconds:35,demo:[60,57,64,59]},
+    {type:'rhythm',instruction:'Copie este ritmo.',hint:'Qualquer nota.',pattern:[0,1.5,3],required:5,maxSeconds:35,demoRhythm:true},
+    {type:'find',instruction:'Encontre as notas pedidas.',hint:'Sem olhar shape.',targets:[60,64,69,72],required:4,maxSeconds:35},
+    {type:'imitate',instruction:'Copie esta frase.',hint:'Ouça e reproduza.',sequence:[57,60,62,64,62,60,57],required:1,maxSeconds:35},
     {type:'free',instruction:'Toque livremente outra vez.',hint:'Use o que acabou de perceber.',seconds:70}
   ];
 }
@@ -374,6 +374,7 @@ function stepClock(){
   if(!session)return;
   const st=session.steps[session.index],elapsed=now()-session.stepStarted;
   if((st.type==='free'||st.type==='freeGuided')&&elapsed>=st.seconds){advanceStep('Boa. Vamos seguir.');return;}
+  if(st.maxSeconds&&elapsed>=st.maxSeconds){advanceStep('Vamos para o próximo teste.');return;}
   if(st.type==='freeGuided'){
     const cues=['Faça uma frase curta e pare.','Agora deixe dois tempos de espaço.','Na próxima frase, procure uma chord tone.','Use um pedaço do lick, não o lick inteiro.'];
     const idx=Math.floor(elapsed/10);
@@ -402,7 +403,7 @@ function evaluateNote(ev){
     if(ev.pc===pc(target)){session.metrics.hits++;session.seqIndex++;success(session.seqIndex+'/'+st.sequence.length);if(session.seqIndex>=st.sequence.length)advanceStep('Frase copiada. Agora ela entra no seu vocabulário.');}
     else{session.seqIndex=0;fail('A sequência quebrou. Ouça de novo e recomece.');}
   }else if(st.type==='rhythm'&&ev.onset){
-    const beat=60/jam.bpm,bar=((audio.ctx.currentTime-(jam.nextTime-.12))%(beat*4)+beat*4)%(beat*4),targets=st.pattern.map(x=>x*beat);
+    const beat=60/jam.bpm,bar=((audio.ctx.currentTime-jam.origin)%(beat*4)+beat*4)%(beat*4),targets=st.pattern.map(x=>x*beat);
     const near=Math.min.apply(null,targets.map(x=>Math.abs(bar-x)));
     session.metrics.attempts++;if(near<.17){session.metrics.hits++;session.progress++;success('No groove.');if(session.progress>=st.required)advanceStep('O ritmo já está carregando a frase.');}else fail('Ataque fora do desenho. Ouça o exemplo.');
   }
