@@ -3,98 +3,76 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090b10">
-<title>FretMentor Mobile Test</title>
+<meta name="theme-color" content="#080b11">
+<title>FretMentor</title>
+<link rel="stylesheet" href="./style.css?v=final1">
 <style>
-:root{color-scheme:dark;--bg:#080a0f;--p:#111722;--l:#263041;--t:#eef3fb;--m:#8995a7;--a:#35d5a6;--v:#8b7cff}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#192033,#090b10 38%,#06080c 80%);color:var(--t);font-family:Inter,system-ui,sans-serif;min-height:100dvh}
-main{max-width:760px;margin:auto;padding:20px 16px 42px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.brand{font-weight:900;font-size:18px}.brand small{display:block;color:var(--m);font-weight:600;font-size:10px;margin-top:2px}.secure{font-size:11px;color:var(--a);border:1px solid #22483e;border-radius:999px;padding:7px 10px;background:#0d1d19}
-.card{background:linear-gradient(145deg,#121824,#0d121b);border:1px solid var(--l);border-radius:22px;padding:17px;margin:12px 0;box-shadow:0 18px 55px #0006}.note{display:grid;grid-template-columns:76px 1fr;gap:15px;align-items:center}.orb{width:76px;height:76px;border-radius:21px;display:grid;place-items:center;background:linear-gradient(145deg,var(--v),#5369ff);font-size:31px;font-weight:950}.meta b{font-size:19px}.meta span{display:block;color:var(--m);font-size:12px;margin-top:5px}.meter{height:7px;background:#1a2230;border-radius:99px;overflow:hidden;margin-top:14px}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--v),var(--a))}
-button{width:100%;border:0;border-radius:16px;padding:15px 16px;font-weight:900;font-size:15px;background:var(--a);color:#05110d;margin-top:12px}button:disabled{opacity:.5}.status{font-size:12px;color:var(--m);line-height:1.5}.good{color:#9af0cf}.bad{color:#ff9fab}
-.wrap{overflow-x:auto}.fb{min-width:700px;border:1px solid var(--l);border-radius:16px;overflow:hidden;background:#0a0f16}.string{height:38px;display:grid;grid-template-columns:repeat(13,1fr);position:relative}.string:after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#707a88aa}.f{border-right:1px solid #2a3342;display:grid;place-items:center;z-index:1}.f span{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#151c29;border:1px solid #2d3748;color:#7f8b9c;font-size:9px;font-weight:900}.f.on span{background:var(--a);border-color:transparent;color:#05110d;box-shadow:0 0 17px #35d5a688}.labels{min-width:700px;display:grid;grid-template-columns:repeat(13,1fr);text-align:center;color:#647083;font-size:9px;margin-top:5px}
-h2{font-size:14px;margin:0 0 12px}.tip{font-size:11px;color:var(--m);margin-top:10px;line-height:1.45}
+.setting{display:grid;grid-template-columns:1fr 120px;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #1d2736}.setting label{font-size:11px;font-weight:900}.setting small{display:block;color:var(--muted);font-weight:500;margin-top:3px}.setting input{width:100%}
+.coach{padding:14px;border:1px solid #2d3d53;border-radius:16px;background:#0d151f;margin-top:10px}.coach h3{font-size:12px;margin:0 0 7px}.coach p{font-size:10.5px;margin:0;color:#a9b5c6;line-height:1.55}
+.history{display:grid;gap:8px}.history-item{display:flex;justify-content:space-between;gap:12px;padding:11px;border:1px solid var(--line);border-radius:14px;background:#0c121b}.history-item b{display:block;font-size:11px}.history-item span{display:block;font-size:9px;color:var(--muted);margin-top:3px}
+.bigscore{font-size:48px;font-weight:950;letter-spacing:-2px}.secure-note{font-size:10px;color:var(--muted);line-height:1.45;margin-top:10px}
 </style>
 </head>
 <body>
-<main>
-  <div class="top"><div class="brand">FretMentor<small>mobile microphone test</small></div><div class="secure">HTTPS</div></div>
+<div class="app">
+<header class="topbar"><div class="brand">FretMentor<small>adaptive improvisation trainer</small></div><button class="micpill" id="micBtn">MIC OFF</button></header>
+
+<section class="screen active" id="homeScreen">
+  <div class="hero">
+    <div class="eyebrow">TREINO ADAPTATIVO</div>
+    <h1>Saiba o que está fazendo enquanto improvisa.</h1>
+    <p>O app escuta suas notas, acompanha a harmonia e transforma seus erros em exercícios. Para o backing track, use fones para o som não voltar ao microfone.</p>
+    <div class="actions"><button class="btn violet" id="startGuided">GUIDED JAM</button><button class="btn alt" id="startDiagnostic">TESTE 5 MIN</button></div>
+  </div>
+  <div class="section-title"><h2>Treinos</h2><span>ou deixe o Guided Jam decidir</span></div>
+  <div class="grid" id="exerciseGrid"></div>
+  <div class="section-title"><h2>Perfil</h2><span id="profileHint">estimativa local</span></div>
+  <div class="card"><div class="skills" id="skills"></div></div>
+  <div class="section-title"><h2>Coach</h2><span>análise adaptativa local</span></div>
+  <div class="coach"><h3 id="coachTitle">Ainda sem dados suficientes</h3><p id="coachText">Faça o teste inicial ou uma sessão para o app começar a detectar seus gargalos.</p></div>
+</section>
+
+<section class="screen" id="liveScreen">
   <div class="card">
-    <div class="note">
-      <div class="orb" id="note">—</div>
-      <div class="meta"><b id="freq">Aguardando microfone</b><span id="detail">Toque uma nota por vez no violão.</span></div>
-    </div>
-    <div class="meter"><i id="level"></i></div>
-    <button id="start">Ativar microfone</button>
-    <div id="status" class="status" style="margin-top:12px">O navegador pedirá a permissão uma única vez.</div>
+    <div class="livehead"><div><div class="mode-title" id="modeTitle">Sessão</div><div class="mode-sub" id="modeSub">—</div></div><div class="timer" id="timer">00:00</div></div>
+    <div class="phasebar"><i id="phaseProgress"></i></div>
+    <div class="prompt"><div class="label" id="promptLabel">INSTRUÇÃO</div><div class="main" id="promptMain">Ative o microfone.</div><div class="sub" id="promptSub">O treino começa assim que o microfone estiver pronto.</div></div>
+    <div class="chordline" id="chordLine"></div>
+    <div class="note-panel"><div class="orb" id="noteOrb">—</div><div class="note-meta"><b id="noteName">Aguardando nota</b><span id="noteDetail">—</span><div class="meter"><i id="levelBar"></i></div></div></div>
+    <div class="feedback" id="feedback">—</div>
+    <div class="mini-stats"><div class="mini"><b id="statNotes">0</b><span>NOTAS</span></div><div class="mini"><b id="statHits">—</b><span>ACERTOS</span></div><div class="mini"><b id="statPhrases">0</b><span>FRASES</span></div></div>
+    <div class="session-controls"><button class="btn alt small" id="toggleBacking">BACKING: ON</button><button class="btn warn small" id="stopSession">ENCERRAR</button></div>
   </div>
   <div class="card">
-    <h2>Fretboard ao vivo</h2>
-    <div class="wrap"><div id="board"></div></div>
-    <div class="tip">O microfone identifica o pitch. Como a mesma nota existe em várias posições, todas as posições equivalentes ficam acesas.</div>
+    <div class="livehead"><div><div class="mode-title" style="font-size:14px">Fretboard</div><div class="mode-sub">verde = tocada · roxo = alvo · contorno = permitida</div></div><span class="tag">Am</span></div>
+    <div class="wrap"><div id="fretboard"></div></div>
   </div>
-</main>
-<script>
-const N=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'], tuning=[40,45,50,55,59,64];
-const $=s=>document.querySelector(s);let ctx,an,gainNode,stream,buf,running=false,lastMidi=null,lastAt=0;
-function noteFromMidi(m){return N[(m%12+12)%12]+(Math.floor(m/12)-1)}
-function cents(f,m){let e=440*Math.pow(2,(m-69)/12);return Math.round(1200*Math.log2(f/e))}
-function build(pc=null){let h='<div class="fb">';for(let s=tuning.length-1;s>=0;s--){h+='<div class="string">';for(let f=0;f<=12;f++){let p=(tuning[s]+f)%12;h+=`<div class="f ${p===pc?'on':''}"><span>${N[p]}</span></div>`}h+='</div>'}h+='</div><div class="labels">'+Array.from({length:13},(_,i)=>'<span>'+i+'</span>').join('')+'</div>';$('#board').innerHTML=h}
-function detectPitch(b,sr){
-  const n=b.length;
-  let mean=0;
-  for(let i=0;i<n;i++) mean+=b[i];
-  mean/=n;
+</section>
 
-  let rms=0;
-  for(let i=0;i<n;i++){
-    const v=b[i]-mean;
-    rms+=v*v;
-  }
-  rms=Math.sqrt(rms/n);
+<section class="screen" id="progressScreen">
+  <div class="hero"><div class="eyebrow">PROGRESSÃO</div><h1 style="font-size:25px">Seu mapa de habilidades.</h1><p>Os scores são estimativas práticas baseadas no que o app observa nos exercícios. Eles servem para decidir o próximo treino.</p></div>
+  <div class="section-title"><h2>Skill vector</h2><span>0–100</span></div>
+  <div class="card"><div class="skills" id="progressSkills"></div></div>
+  <div class="section-title"><h2>Histórico</h2><span>últimas sessões</span></div>
+  <div class="history" id="historyList"></div>
+</section>
 
-  // Much lower gate for decaying notes / hammer-ons / pull-offs.
-  if(rms<0.0012) return null;
+<section class="screen" id="settingsScreen">
+  <div class="hero"><div class="eyebrow">AJUSTES</div><h1 style="font-size:25px">Ajuste o detector ao seu violão.</h1><p>Hammer-ons, pull-offs e slides exigem sensibilidade alta. Se começar a captar ruído, aumente o noise gate.</p></div>
+  <div class="card" style="margin-top:12px">
+    <div class="setting"><div><label>Sensibilidade</label><small>ganho antes da análise</small></div><input id="gainSlider" type="range" min="1" max="7" step="0.2"></div>
+    <div class="setting"><div><label>Noise gate</label><small>menor = capta notas mais baixas</small></div><input id="gateSlider" type="range" min="0.0005" max="0.008" step="0.0005"></div>
+    <div class="setting"><div><label>Backing volume</label><small>fones recomendados</small></div><input id="backingSlider" type="range" min="0" max="0.7" step="0.02"></div>
+    <div class="setting"><div><label>Fretboard Fog</label><small>quanto o mapa revela</small></div><input id="fogSlider" type="range" min="0" max="100" step="10"></div>
+    <button class="btn alt" id="resetData" style="margin-top:13px">ZERAR PROGRESSO</button>
+    <div class="secure-note">A análise desta versão roda no aparelho. A conexão direta com a conta ChatGPT exige uma camada segura de servidor; ela não foi simulada dentro do navegador.</div>
+  </div>
+</section>
 
-  // Guitar-focused range: ~75 Hz to 1400 Hz.
-  const minLag=Math.max(2,Math.floor(sr/1400));
-  const maxLag=Math.min(n-4,Math.ceil(sr/75));
-
-  let bestLag=-1,bestCorr=0;
-  for(let lag=minLag;lag<=maxLag;lag++){
-    let sum=0,e1=0,e2=0;
-    const stop=n-lag;
-    for(let i=0;i<stop;i++){
-      const a=b[i]-mean, d=b[i+lag]-mean;
-      sum+=a*d; e1+=a*a; e2+=d*d;
-    }
-    const corr=sum/Math.sqrt((e1*e2)||1);
-    if(corr>bestCorr){bestCorr=corr;bestLag=lag}
-  }
-
-  // Reject noise, but keep softer legato notes.
-  if(bestLag<0 || bestCorr<0.58) return null;
-
-  // Parabolic interpolation around the best lag for smoother slides/bends.
-  const corrAt=(lag)=>{
-    if(lag<minLag||lag>maxLag)return 0;
-    let sum=0,e1=0,e2=0,stop=n-lag;
-    for(let i=0;i<stop;i++){
-      const a=b[i]-mean,d=b[i+lag]-mean;
-      sum+=a*d;e1+=a*a;e2+=d*d;
-    }
-    return sum/Math.sqrt((e1*e2)||1);
-  };
-  const y1=corrAt(bestLag-1), y2=bestCorr, y3=corrAt(bestLag+1);
-  const denom=(y1-2*y2+y3);
-  const shift=Math.abs(denom)>1e-6 ? 0.5*(y1-y3)/denom : 0;
-  const lag=bestLag+Math.max(-1,Math.min(1,shift));
-  const freq=sr/lag;
-  if(freq<75||freq>1400)return null;
-  return {f:freq,rms,confidence:bestCorr};
-}
-function loop(){if(!running)return;an.getFloatTimeDomainData(buf);let r=detectPitch(buf,ctx.sampleRate);if(r){let midi=Math.round(69+12*Math.log2(r.f/440)),now=performance.now();if(midi!==lastMidi||now-lastAt>55){lastMidi=midi;lastAt=now;let c=cents(r.f,midi);$('#note').textContent=noteFromMidi(midi);$('#freq').textContent=r.f.toFixed(1)+' Hz';$('#detail').textContent=(c>=0?'+':'')+c+' cents · MIDI '+midi;$('#level').style.width=Math.min(100,r.rms*650)+'%';build((midi%12+12)%12)}}requestAnimationFrame(loop)}
-async function start(){try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('getUserMedia indisponível');stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true,channelCount:1}});ctx=new (window.AudioContext||window.webkitAudioContext)();await ctx.resume();let src=ctx.createMediaStreamSource(stream);gainNode=ctx.createGain();gainNode.gain.value=4.0;an=ctx.createAnalyser();an.fftSize=2048;src.connect(gainNode);gainNode.connect(an);buf=new Float32Array(an.fftSize);running=true;$('#start').disabled=true;$('#start').textContent='Microfone ativo';$('#status').innerHTML='<span class="good">Microfone liberado.</span> Modo legato ativado: alta sensibilidade para hammer-on, pull-off e slides.';loop()}catch(e){$('#status').innerHTML='<span class="bad">Não foi possível abrir o microfone.</span> '+(e.message||e)}}
-$('#start').onclick=start;build();
-</script>
+<nav class="nav"><button class="active" data-screen="homeScreen"><b>⌂</b>INÍCIO</button><button data-screen="liveScreen"><b>◉</b>SESSÃO</button><button data-screen="progressScreen"><b>↗</b>PROGRESSO</button><button data-screen="settingsScreen"><b>⚙</b>AJUSTES</button></nav>
+</div>
+<div class="overlay" id="modalOverlay"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+<script src="./app.js?v=final1"></script>
 </body>
 </html>
