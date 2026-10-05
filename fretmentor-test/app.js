@@ -38,16 +38,6 @@ function showScreen(id){
 }
 $$('.bottom-nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
 
-function speak(text){
-  if(!('speechSynthesis' in window))return;
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text.replace(/Am/g,'Lá menor').replace(/F/g,'Fá').replace(/C/g,'Dó').replace(/G/g,'Sol'));
-  u.lang='pt-BR';u.rate=1.04;u.pitch=1;
-  const voices=speechSynthesis.getVoices();
-  const v=voices.find(x=>x.lang&&x.lang.toLowerCase().startsWith('pt-br'))||voices.find(x=>x.lang&&x.lang.toLowerCase().startsWith('pt'));
-  if(v)u.voice=v;
-  speechSynthesis.speak(u);
-}
 function openModal(html){$('#modal').innerHTML=html;$('#modalOverlay').classList.add('show');}
 function closeModal(){$('#modalOverlay').classList.remove('show');}
 $('#modalOverlay').onclick=e=>{if(e.target===$('#modalOverlay'))closeModal();};
@@ -357,7 +347,7 @@ function applyStep(i){
   $('#instruction').textContent=st.instruction;$('#hint').textContent=st.hint||'';
   $('#feedback').className='feedback';$('#feedback').textContent='Faça quando estiver pronto.';
   $('#demoBtn').textContent='▶ OUVIR EXEMPLO';
-  speak(st.instruction);
+
   renderFretboard(audio.lastAccepted==null?null:pc(audio.lastAccepted));
   if(st.type==='listen')setTimeout(()=>{if(session&&session.index===i)advanceStep('Agora sim.');},st.seconds*1000);
 }
@@ -378,7 +368,7 @@ function stepClock(){
   if(st.type==='freeGuided'){
     const cues=['Faça uma frase curta e pare.','Agora deixe dois tempos de espaço.','Na próxima frase, procure uma chord tone.','Use um pedaço do lick, não o lick inteiro.'];
     const idx=Math.floor(elapsed/10);
-    if(idx!==session.freeCue&&idx<cues.length){session.freeCue=idx;$('#hint').textContent=cues[idx];speak(cues[idx]);}
+    if(idx!==session.freeCue&&idx<cues.length){session.freeCue=idx;$('#hint').textContent=cues[idx];}
   }
   if(elapsed>14&&!session.hintAt&& !['free','freeGuided','listen'].includes(st.type)){
     session.hintAt=elapsed;$('#feedback').className='feedback warn';$('#feedback').textContent='Travou? Ouça o exemplo novamente.';
@@ -395,7 +385,7 @@ function evaluateNote(ev){
     if(st.allowed&& !st.allowed.includes(ev.pc))fail(NOTES[ev.pc]+' está fora da limitação deste passo.');
   }else if(st.type==='find'){
     const target=st.targets[Math.min(session.progress,st.targets.length-1)];session.metrics.attempts++;
-    if(ev.midi===target){session.metrics.hits++;session.progress++;success('Encontrou '+noteName(target)+'.');if(session.progress>=st.required)advanceStep('Agora você está encontrando a nota, não o shape.');else{const n=st.targets[session.progress];$('#instruction').textContent='Agora encontre '+noteName(n)+'.';speak('Agora encontre '+noteName(n));renderFretboard(ev.pc);}}else fail('Você tocou '+noteName(ev.midi)+'. O alvo é '+noteName(target)+'.');
+    if(ev.midi===target){session.metrics.hits++;session.progress++;success('Encontrou '+noteName(target)+'.');if(session.progress>=st.required)advanceStep('Agora você está encontrando a nota, não o shape.');else{const n=st.targets[session.progress];$('#instruction').textContent='Agora encontre '+noteName(n)+'.';renderFretboard(ev.pc);}}else fail('Você tocou '+noteName(ev.midi)+'. O alvo é '+noteName(target)+'.');
   }else if(st.type==='findPc'){
     session.metrics.attempts++;if(ev.pc===st.targetPc){const used=session.findOctaves||(session.findOctaves=new Set());if(!used.has(ev.midi)){used.add(ev.midi);session.metrics.hits++;session.progress++;success('Boa. Agora outra oitava.');if(session.progress>=st.required)advanceStep('Você saiu da mesma região.');}}else fail('Procure '+NOTES[st.targetPc]+'.');
   }else if(st.type==='imitate'){

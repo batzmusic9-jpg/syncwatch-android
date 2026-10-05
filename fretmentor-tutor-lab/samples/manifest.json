@@ -1,0 +1,216 @@
+{
+  "guitar": [
+    {
+      "midi": 45,
+      "layer": "soft",
+      "rr": 1,
+      "url": "samples/guitar/45-soft-1.mp3"
+    },
+    {
+      "midi": 45,
+      "layer": "soft",
+      "rr": 2,
+      "url": "samples/guitar/45-soft-2.mp3"
+    },
+    {
+      "midi": 45,
+      "layer": "hard",
+      "rr": 1,
+      "url": "samples/guitar/45-hard-1.mp3"
+    },
+    {
+      "midi": 45,
+      "layer": "hard",
+      "rr": 2,
+      "url": "samples/guitar/45-hard-2.mp3"
+    },
+    {
+      "midi": 52,
+      "layer": "soft",
+      "rr": 1,
+      "url": "samples/guitar/52-soft-1.mp3"
+    },
+    {
+      "midi": 52,
+      "layer": "soft",
+      "rr": 2,
+      "url": "samples/guitar/52-soft-2.mp3"
+    },
+    {
+      "midi": 52,
+      "layer": "hard",
+      "rr": 1,
+      "url": "samples/guitar/52-hard-1.mp3"
+    },
+    {
+      "midi": 52,
+      "layer": "hard",
+      "rr": 2,
+      "url": "samples/guitar/52-hard-2.mp3"
+    },
+    {
+      "midi": 55,
+      "layer": "soft",
+      "rr": 1,
+      "url": "samples/guitar/55-soft-1.mp3"
+    },
+    {
+      "midi": 55,
+      "layer": "soft",
+      "rr": 2,
+      "url": "samples/guitar/55-soft-2.mp3"
+    },
+    {
+      "midi": 55,
+      "layer": "hard",
+      "rr": 1,
+      "url": "samples/guitar/55-hard-1.mp3"
+    },
+    {
+      "midi": 55,
+      "layer": "hard",
+      "rr": 2,
+      "url": "samples/guitar/55-hard-2.mp3"
+    },
+    {
+      "midi": 59,
+      "layer": "soft",
+      "rr": 1,
+      "url": "samples/guitar/59-soft-1.mp3"
+    },
+    {
+      "midi": 59,
+      "layer": "soft",
+      "rr": 2,
+      "url": "samples/guitar/59-soft-2.mp3"
+    },
+    {
+      "midi": 59,
+      "layer": "hard",
+      "rr": 1,
+      "url": "samples/guitar/59-hard-1.mp3"
+    },
+    {
+      "midi": 59,
+      "layer": "hard",
+      "rr": 2,
+      "url": "samples/guitar/59-hard-2.mp3"
+    },
+    {
+      "midi": 61,
+      "layer": "soft",
+      "rr": 1,
+      "url": "samples/guitar/61-soft-1.mp3"
+    },
+    {
+      "midi": 61,
+      "layer": "soft",
+      "rr": 2,
+      "url": "samples/guitar/61-soft-2.mp3"
+    },
+    {
+      "midi": 61,
+      "layer": "hard",
+      "rr": 1,
+      "url": "samples/guitar/61-hard-1.mp3"
+    },
+    {
+      "midi": 61,
+      "layer": "hard",
+      "rr": 2,
+      "url": "samples/guitar/61-hard-2.mp3"
+    },
+    {
+      "midi": 64,
+      "layer": "soft",
+      "rr": 1,
+      "url": "samples/guitar/64-soft-1.mp3"
+    },
+    {
+      "midi": 64,
+      "layer": "soft",
+      "rr": 2,
+      "url": "samples/guitar/64-soft-2.mp3"
+    },
+    {
+      "midi": 64,
+      "layer": "hard",
+      "rr": 1,
+      "url": "samples/guitar/64-hard-1.mp3"
+    },
+    {
+      "midi": 64,
+      "layer": "hard",
+      "rr": 2,
+      "url": "samples/guitar/64-hard-2.mp3"
+    },
+    {
+      "midi": 67,
+      "layer": "single",
+      "rr": 1,
+      "url": "samples/guitar/67-hard-1.mp3"
+    },
+    {
+      "midi": 67,
+      "layer": "single",
+      "rr": 2,
+      "url": "samples/guitar/67-hard-2.mp3"
+    },
+    {
+      "midi": 71,
+      "layer": "single",
+      "rr": 1,
+      "url": "samples/guitar/71-hard-1.mp3"
+    },
+    {
+      "midi": 71,
+      "layer": "single",
+      "rr": 2,
+      "url": "samples/guitar/71-hard-2.mp3"
+    }
+  ],
+  "bass": [
+    {
+      "midi": 28,
+      "url": "samples/bass/28.mp3"
+    },
+    {
+      "midi": 33,
+      "url": "samples/bass/33.mp3"
+    },
+    {
+      "midi": 36,
+      "url": "samples/bass/36.mp3"
+    },
+    {
+      "midi": 40,
+      "url": "samples/bass/40.mp3"
+    },
+    {
+      "midi": 43,
+      "url": "samples/bass/43.mp3"
+    }
+  ],
+  "drums": [
+    {
+      "name": "kick",
+      "url": "samples/drums/kick.mp3"
+    },
+    {
+      "name": "snare",
+      "url": "samples/drums/snare.mp3"
+    },
+    {
+      "name": "hat",
+      "url": "samples/drums/hat.mp3"
+    },
+    {
+      "name": "openhat",
+      "url": "samples/drums/openhat.mp3"
+    },
+    {
+      "name": "rim",
+      "url": "samples/drums/rim.mp3"
+    }
+  ]
+}

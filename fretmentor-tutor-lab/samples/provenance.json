@@ -1,0 +1,192 @@
+[
+  {
+    "file": "samples/guitar/45-soft-1.mp3",
+    "source": "samples/bridge/A2_s2_soft_01.flac",
+    "sha256": "4bf0aea0599547c5dffc6b19acf1a1189c18a96512f725c033b40de01b522891"
+  },
+  {
+    "file": "samples/guitar/45-soft-2.mp3",
+    "source": "samples/bridge/A2_s2_soft_02.flac",
+    "sha256": "cfda7edefd9dd40b4009ad1a9b79cd952b16fb3fcde23076783d01572afe16eb"
+  },
+  {
+    "file": "samples/guitar/45-hard-1.mp3",
+    "source": "samples/bridge/A2_s2_01.flac",
+    "sha256": "80c3c10a826ba194144298ce5084b05faf9c7466f31dde02394e384672ae6b31"
+  },
+  {
+    "file": "samples/guitar/45-hard-2.mp3",
+    "source": "samples/bridge/A2_s2_02.flac",
+    "sha256": "df7344a68c73eb8219b5ef1ee449cd68c1b03318510bce276381ffb799ee47d2"
+  },
+  {
+    "file": "samples/guitar/52-soft-1.mp3",
+    "source": "samples/bridge/E3_s3_soft_01.flac",
+    "sha256": "550abcaf9a6aceadb85e11a253d5b73cbecd0597acb03cc1b67320e17826b11f"
+  },
+  {
+    "file": "samples/guitar/52-soft-2.mp3",
+    "source": "samples/bridge/E3_s3_soft_02.flac",
+    "sha256": "737515edc028a1e6e38ab405a3501402c1ef7a64b6607be9bf20b963ccf2b756"
+  },
+  {
+    "file": "samples/guitar/52-hard-1.mp3",
+    "source": "samples/bridge/E3_s3_01.flac",
+    "sha256": "3b0636d77bf15b8843131c99beae04d85e31d5a5b014cba8abba0b96716f18cb"
+  },
+  {
+    "file": "samples/guitar/52-hard-2.mp3",
+    "source": "samples/bridge/E3_s3_02.flac",
+    "sha256": "6b7747c7c24ed3e8356c4e12bd19171f4470a43d2bc0ac92c0c2ae8f1cb48d6e"
+  },
+  {
+    "file": "samples/guitar/55-soft-1.mp3",
+    "source": "samples/bridge/G3_s4_soft_01.flac",
+    "sha256": "b805b345713907e11d88dec0b74126f8a187a6ff5be92f02a6e2190641778021"
+  },
+  {
+    "file": "samples/guitar/55-soft-2.mp3",
+    "source": "samples/bridge/G3_s4_soft_02.flac",
+    "sha256": "d154f8834b9513be01a2b41c2d284e2ab87dd02335983085057b6ba41b343f3c"
+  },
+  {
+    "file": "samples/guitar/55-hard-1.mp3",
+    "source": "samples/bridge/G3_s4_01.flac",
+    "sha256": "2b2f0b6c14229af41d55efaaf0c79a0f2be17fe1eeac4dea745afdcdec1c1418"
+  },
+  {
+    "file": "samples/guitar/55-hard-2.mp3",
+    "source": "samples/bridge/G3_s4_02.flac",
+    "sha256": "d2907a5eab29579ca265fc6ca3838422deb68c4ad980b3cf6e3af26ed5dc08d1"
+  },
+  {
+    "file": "samples/guitar/59-soft-1.mp3",
+    "source": "samples/bridge/B3_s5_soft_01.flac",
+    "sha256": "7c4f25d3029166e230a77c4394f68b985a1ae61277e26d747bdfc8dfda277feb"
+  },
+  {
+    "file": "samples/guitar/59-soft-2.mp3",
+    "source": "samples/bridge/B3_s5_soft_02.flac",
+    "sha256": "45c86de7b344c53e903ae5a1afae85b062f90171f111d2f36b7f27cfbb5421fb"
+  },
+  {
+    "file": "samples/guitar/59-hard-1.mp3",
+    "source": "samples/bridge/B3_s5_01.flac",
+    "sha256": "29f7adc9cdeee1c13070876c808d087cb1f5d2b8ff9c162cc5c530c5f2619e5e"
+  },
+  {
+    "file": "samples/guitar/59-hard-2.mp3",
+    "source": "samples/bridge/B3_s5_02.flac",
+    "sha256": "7b82f9b03360191b58e2489b9ba981dff65e47c6a7c0de44473c70610e6d71da"
+  },
+  {
+    "file": "samples/guitar/61-soft-1.mp3",
+    "source": "samples/bridge/C#4_s5_soft_01.flac",
+    "sha256": "87986345df3713e548ecc965e48a98a6154963b0941747f5430aac2939afd845"
+  },
+  {
+    "file": "samples/guitar/61-soft-2.mp3",
+    "source": "samples/bridge/C#4_s5_soft_02.flac",
+    "sha256": "00126e1561c86ce955abbdd081abd0f5c705b6f5c81ab8919d6b723904b2ec48"
+  },
+  {
+    "file": "samples/guitar/61-hard-1.mp3",
+    "source": "samples/bridge/C#4_s5_01.flac",
+    "sha256": "e167f09d9262256d095b390f604884579c9470cbf290ff29a52152957d94cf3c"
+  },
+  {
+    "file": "samples/guitar/61-hard-2.mp3",
+    "source": "samples/bridge/C#4_s5_02.flac",
+    "sha256": "38f36741d4625726495a0977e82ff5ff5cbd3dde98af50acd6e2d950c194e376"
+  },
+  {
+    "file": "samples/guitar/64-soft-1.mp3",
+    "source": "samples/bridge/E4_s6_soft_01.flac",
+    "sha256": "ce78e90d2f8853b3855026dbe39b641439b738c7edee05dfac002eaf4a1498ea"
+  },
+  {
+    "file": "samples/guitar/64-soft-2.mp3",
+    "source": "samples/bridge/E4_s6_soft_02.flac",
+    "sha256": "f3cb825cc620b3a88e1d7ad6debb7ca0ad1f0189ced88a1aec66e2e9a0c71071"
+  },
+  {
+    "file": "samples/guitar/64-hard-1.mp3",
+    "source": "samples/bridge/E4_s6_01.flac",
+    "sha256": "f5fbecb61efcb716d5d0184dd1f5742736caaffa5836ec2851b74cc60600e955"
+  },
+  {
+    "file": "samples/guitar/64-hard-2.mp3",
+    "source": "samples/bridge/E4_s6_02.flac",
+    "sha256": "dd3641c4e980869744b8139414871c915c69ffc1bbc7f4f4e03fb01d9de2c2fa"
+  },
+  {
+    "file": "samples/guitar/67-hard-1.mp3",
+    "source": "samples/bridge/G4_s6_01.flac",
+    "sha256": "a995be68006224f6987409216bee8c919727b62b514e9409b2d39661754cec91"
+  },
+  {
+    "file": "samples/guitar/67-hard-2.mp3",
+    "source": "samples/bridge/G4_s6_02.flac",
+    "sha256": "72bd9b5b16370bd639a28364a9152c7de9b7c4e1fa517278b54b48dc63da36ee"
+  },
+  {
+    "file": "samples/guitar/71-hard-1.mp3",
+    "source": "samples/bridge/B4_s6_01.flac",
+    "sha256": "4b41ccdcb35a13553b66650217248958fec403e5ed09ef1b1d2affb11c776899"
+  },
+  {
+    "file": "samples/guitar/71-hard-2.mp3",
+    "source": "samples/bridge/B4_s6_02.flac",
+    "sha256": "d2980aa20bc83330fae1c54acbf62a9d6c0bbd7ec70cde7552e955e8b312611d"
+  },
+  {
+    "file": "samples/bass/28.mp3",
+    "source": "FluidR3_GM/electric_bass_finger-mp3/E1.mp3",
+    "sha256": "61659a3af1a6a7dbb3749d26a0bad4dd3c3c6748be498144d6b7fc8134b5a505"
+  },
+  {
+    "file": "samples/bass/33.mp3",
+    "source": "FluidR3_GM/electric_bass_finger-mp3/A1.mp3",
+    "sha256": "a4b1d3f2e808b8c8143379c74e333a05c2fe8d34420e53324166a9b692adcbfb"
+  },
+  {
+    "file": "samples/bass/36.mp3",
+    "source": "FluidR3_GM/electric_bass_finger-mp3/C2.mp3",
+    "sha256": "0d52ee341aecc1074fbdce40c93862a252a849feed906d3d1673eeb70da742dd"
+  },
+  {
+    "file": "samples/bass/40.mp3",
+    "source": "FluidR3_GM/electric_bass_finger-mp3/E2.mp3",
+    "sha256": "c2e770a12e5d4477e96db90089beee5be2488eb8f85aae47ea177e2ded29d840"
+  },
+  {
+    "file": "samples/bass/43.mp3",
+    "source": "FluidR3_GM/electric_bass_finger-mp3/G2.mp3",
+    "sha256": "afc644d2d355cec5f7d104d2406c30ad1fa09e734b3a497a9dcefd6ae713857e"
+  },
+  {
+    "file": "samples/drums/kick.mp3",
+    "source": "FluidR3_GM/percussion-mp3.js C2",
+    "sha256": "5415a539ea97224ed37e18d719559cb4c0b185a76e8319ac8dad6177fb8c712c"
+  },
+  {
+    "file": "samples/drums/snare.mp3",
+    "source": "FluidR3_GM/percussion-mp3.js D2",
+    "sha256": "3fae47c27e93bf25352ce623c925faff453b0bf134ebd38858492ff49b08b50e"
+  },
+  {
+    "file": "samples/drums/hat.mp3",
+    "source": "FluidR3_GM/percussion-mp3.js Gb2",
+    "sha256": "f3f44276b9482676688ee53f3dee641d1eaea6081029f3274f349ab48d16d517"
+  },
+  {
+    "file": "samples/drums/openhat.mp3",
+    "source": "FluidR3_GM/percussion-mp3.js Bb2",
+    "sha256": "feb5b9403cc8e1c0f6d02ec4a3398894edd5a6404d636184edb4932c877213a2"
+  },
+  {
+    "file": "samples/drums/rim.mp3",
+    "source": "FluidR3_GM/percussion-mp3.js Db2",
+    "sha256": "f35c51dc7619b987fd71a3574db8317e7305b19bddde9d12bdcf663117a432e5"
+  }
+]

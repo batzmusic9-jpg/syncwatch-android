@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d1418"><meta name="description" content="Laboratório de fraseado musical e tablatura ao vivo"><title>FretMentor — Musical Tutor Lab</title><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"></head>
+<body><main>
+<header><h1>FretMentor</h1><p>MUSICAL TUTOR LAB</p><span class="tempo">82 BPM · 4/4</span></header>
+<div id="chords" class="chords" aria-label="Progressão"><span>Am7</span><span>Fmaj7</span><span>C</span><span>G</span></div>
+<button id="improvise" class="primary">IMPROVISAR</button>
+<p id="status" class="status" role="status">Toque para iniciar a jam.</p>
+<div class="beats" id="beats" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<section class="instrument" aria-label="Tablatura ao vivo"><div class="neck-heading"><span>TUTOR</span><span id="position">—</span></div><div id="fretboard"></div><div class="orientation"><span>CORPO · 12ª CASA</span><span>0 · HEADSTOCK</span></div></section>
+<div class="musical-info"><span id="phrase">OUÇA A IDEIA</span><strong id="note">—</strong><p id="target">Question → Development → Climax → Resolution</p></div>
+<div id="summary" class="summary" hidden></div>
+<details id="debug"><summary>DEBUG</summary><pre id="debug-data"></pre></details>
+<footer><button id="mute" class="quiet" disabled aria-pressed="false">SILENCIAR</button><a href="./CREDITS.md">Samples / licenças</a></footer>
+</main><script type="module" src="./app.mjs"></script></body></html>
