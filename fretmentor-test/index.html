@@ -39,9 +39,61 @@ const $=s=>document.querySelector(s);let ctx,an,gainNode,stream,buf,running=fals
 function noteFromMidi(m){return N[(m%12+12)%12]+(Math.floor(m/12)-1)}
 function cents(f,m){let e=440*Math.pow(2,(m-69)/12);return Math.round(1200*Math.log2(f/e))}
 function build(pc=null){let h='<div class="fb">';for(let s=tuning.length-1;s>=0;s--){h+='<div class="string">';for(let f=0;f<=12;f++){let p=(tuning[s]+f)%12;h+=`<div class="f ${p===pc?'on':''}"><span>${N[p]}</span></div>`}h+='</div>'}h+='</div><div class="labels">'+Array.from({length:13},(_,i)=>'<span>'+i+'</span>').join('')+'</div>';$('#board').innerHTML=h}
-function autoCorrelate(b,sr){let size=b.length,rms=0;for(let i=0;i<size;i++)rms+=b[i]*b[i];rms=Math.sqrt(rms/size);if(rms<.0035)return null;let r1=0,r2=size-1,th=.2;for(let i=0;i<size/2;i++)if(Math.abs(b[i])<th){r1=i;break}for(let i=1;i<size/2;i++)if(Math.abs(b[size-i])<th){r2=size-i;break}b=b.slice(r1,r2);size=b.length;let c=new Array(size).fill(0);for(let i=0;i<size;i++)for(let j=0;j<size-i;j++)c[i]+=b[j]*b[j+i];let d=0;while(c[d]>c[d+1])d++;let max=-1,pos=-1;for(let i=d;i<size;i++)if(c[i]>max){max=c[i];pos=i}if(pos<=0)return null;let x1=c[pos-1]||0,x2=c[pos],x3=c[pos+1]||0,a=(x1+x3-2*x2)/2,beta=(x3-x1)/2,shift=a?(-beta/(2*a)):0;let period=pos+shift,f=sr/period;if(f<70||f>1400)return null;return {f,rms}}
-function loop(){if(!running)return;an.getFloatTimeDomainData(buf);let r=autoCorrelate(buf,ctx.sampleRate);if(r){let midi=Math.round(69+12*Math.log2(r.f/440)),now=performance.now();if(midi!==lastMidi||now-lastAt>120){lastMidi=midi;lastAt=now;let c=cents(r.f,midi);$('#note').textContent=noteFromMidi(midi);$('#freq').textContent=r.f.toFixed(1)+' Hz';$('#detail').textContent=(c>=0?'+':'')+c+' cents · MIDI '+midi;$('#level').style.width=Math.min(100,r.rms*650)+'%';build((midi%12+12)%12)}}requestAnimationFrame(loop)}
-async function start(){try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('getUserMedia indisponível');stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true,channelCount:1}});ctx=new (window.AudioContext||window.webkitAudioContext)();await ctx.resume();let src=ctx.createMediaStreamSource(stream);gainNode=ctx.createGain();gainNode.gain.value=3.2;an=ctx.createAnalyser();an.fftSize=4096;src.connect(gainNode);gainNode.connect(an);buf=new Float32Array(an.fftSize);running=true;$('#start').disabled=true;$('#start').textContent='Microfone ativo';$('#status').innerHTML='<span class="good">Microfone liberado.</span> Sensibilidade alta ativada (ganho 3,2×). Toque até notas bem suaves.';loop()}catch(e){$('#status').innerHTML='<span class="bad">Não foi possível abrir o microfone.</span> '+(e.message||e)}}
+function detectPitch(b,sr){
+  const n=b.length;
+  let mean=0;
+  for(let i=0;i<n;i++) mean+=b[i];
+  mean/=n;
+
+  let rms=0;
+  for(let i=0;i<n;i++){
+    const v=b[i]-mean;
+    rms+=v*v;
+  }
+  rms=Math.sqrt(rms/n);
+
+  // Much lower gate for decaying notes / hammer-ons / pull-offs.
+  if(rms<0.0012) return null;
+
+  // Guitar-focused range: ~75 Hz to 1400 Hz.
+  const minLag=Math.max(2,Math.floor(sr/1400));
+  const maxLag=Math.min(n-4,Math.ceil(sr/75));
+
+  let bestLag=-1,bestCorr=0;
+  for(let lag=minLag;lag<=maxLag;lag++){
+    let sum=0,e1=0,e2=0;
+    const stop=n-lag;
+    for(let i=0;i<stop;i++){
+      const a=b[i]-mean, d=b[i+lag]-mean;
+      sum+=a*d; e1+=a*a; e2+=d*d;
+    }
+    const corr=sum/Math.sqrt((e1*e2)||1);
+    if(corr>bestCorr){bestCorr=corr;bestLag=lag}
+  }
+
+  // Reject noise, but keep softer legato notes.
+  if(bestLag<0 || bestCorr<0.58) return null;
+
+  // Parabolic interpolation around the best lag for smoother slides/bends.
+  const corrAt=(lag)=>{
+    if(lag<minLag||lag>maxLag)return 0;
+    let sum=0,e1=0,e2=0,stop=n-lag;
+    for(let i=0;i<stop;i++){
+      const a=b[i]-mean,d=b[i+lag]-mean;
+      sum+=a*d;e1+=a*a;e2+=d*d;
+    }
+    return sum/Math.sqrt((e1*e2)||1);
+  };
+  const y1=corrAt(bestLag-1), y2=bestCorr, y3=corrAt(bestLag+1);
+  const denom=(y1-2*y2+y3);
+  const shift=Math.abs(denom)>1e-6 ? 0.5*(y1-y3)/denom : 0;
+  const lag=bestLag+Math.max(-1,Math.min(1,shift));
+  const freq=sr/lag;
+  if(freq<75||freq>1400)return null;
+  return {f:freq,rms,confidence:bestCorr};
+}
+function loop(){if(!running)return;an.getFloatTimeDomainData(buf);let r=detectPitch(buf,ctx.sampleRate);if(r){let midi=Math.round(69+12*Math.log2(r.f/440)),now=performance.now();if(midi!==lastMidi||now-lastAt>55){lastMidi=midi;lastAt=now;let c=cents(r.f,midi);$('#note').textContent=noteFromMidi(midi);$('#freq').textContent=r.f.toFixed(1)+' Hz';$('#detail').textContent=(c>=0?'+':'')+c+' cents · MIDI '+midi;$('#level').style.width=Math.min(100,r.rms*650)+'%';build((midi%12+12)%12)}}requestAnimationFrame(loop)}
+async function start(){try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('getUserMedia indisponível');stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true,channelCount:1}});ctx=new (window.AudioContext||window.webkitAudioContext)();await ctx.resume();let src=ctx.createMediaStreamSource(stream);gainNode=ctx.createGain();gainNode.gain.value=4.0;an=ctx.createAnalyser();an.fftSize=2048;src.connect(gainNode);gainNode.connect(an);buf=new Float32Array(an.fftSize);running=true;$('#start').disabled=true;$('#start').textContent='Microfone ativo';$('#status').innerHTML='<span class="good">Microfone liberado.</span> Modo legato ativado: alta sensibilidade para hammer-on, pull-off e slides.';loop()}catch(e){$('#status').innerHTML='<span class="bad">Não foi possível abrir o microfone.</span> '+(e.message||e)}}
 $('#start').onclick=start;build();
 </script>
 </body>
