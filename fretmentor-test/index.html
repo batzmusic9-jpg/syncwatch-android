@@ -5,74 +5,113 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080b11">
 <title>FretMentor</title>
-<link rel="stylesheet" href="./style.css?v=final1">
-<style>
-.setting{display:grid;grid-template-columns:1fr 120px;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #1d2736}.setting label{font-size:11px;font-weight:900}.setting small{display:block;color:var(--muted);font-weight:500;margin-top:3px}.setting input{width:100%}
-.coach{padding:14px;border:1px solid #2d3d53;border-radius:16px;background:#0d151f;margin-top:10px}.coach h3{font-size:12px;margin:0 0 7px}.coach p{font-size:10.5px;margin:0;color:#a9b5c6;line-height:1.55}
-.history{display:grid;gap:8px}.history-item{display:flex;justify-content:space-between;gap:12px;padding:11px;border:1px solid var(--line);border-radius:14px;background:#0c121b}.history-item b{display:block;font-size:11px}.history-item span{display:block;font-size:9px;color:var(--muted);margin-top:3px}
-.bigscore{font-size:48px;font-weight:950;letter-spacing:-2px}.secure-note{font-size:10px;color:var(--muted);line-height:1.45;margin-top:10px}
-</style>
+<link rel="stylesheet" href="./style.css?v=tutor4">
 </head>
 <body>
 <div class="app">
-<header class="topbar"><div class="brand">FretMentor<small>adaptive improvisation trainer</small></div><button class="micpill" id="micBtn">MIC OFF</button></header>
+  <header class="topbar">
+    <div class="brand">FretMentor<small>ADAPTIVE IMPROVISATION TRAINER</small></div>
+    <button id="micBtn" class="micpill">MIC OFF</button>
+  </header>
 
-<section class="screen active" id="homeScreen">
-  <div class="hero">
-    <div class="eyebrow">TREINO ADAPTATIVO</div>
-    <h1>Saiba o que está fazendo enquanto improvisa.</h1>
-    <p>O app escuta suas notas, acompanha a harmonia e transforma seus erros em exercícios. Para o backing track, use fones para o som não voltar ao microfone.</p>
-    <div class="actions"><button class="btn violet" id="startGuided">GUIDED JAM</button><button class="btn alt" id="startDiagnostic">TESTE 5 MIN</button></div>
-  </div>
-  <div class="section-title"><h2>Treinos</h2><span>ou deixe o Guided Jam decidir</span></div>
-  <div class="grid" id="exerciseGrid"></div>
-  <div class="section-title"><h2>Perfil</h2><span id="profileHint">estimativa local</span></div>
-  <div class="card"><div class="skills" id="skills"></div></div>
-  <div class="section-title"><h2>Coach</h2><span>análise adaptativa local</span></div>
-  <div class="coach"><h3 id="coachTitle">Ainda sem dados suficientes</h3><p id="coachText">Faça o teste inicial ou uma sessão para o app começar a detectar seus gargalos.</p></div>
-</section>
+  <main>
+    <section id="homeScreen" class="screen active">
+      <div class="hero">
+        <div class="eyebrow">TREINO GUIADO</div>
+        <h1>Abra, toque e siga o tutor.</h1>
+        <p>O tutor demonstra, pede uma ação, escuta e só então avança. Use fones quando o backing estiver ligado.</p>
+        <button id="startGuided" class="primary">COMEÇAR AULA</button>
+        <button id="startDiagnostic" class="secondary">TESTE INICIAL · 5 MIN</button>
+      </div>
 
-<section class="screen" id="liveScreen">
-  <div class="card">
-    <div class="livehead"><div><div class="mode-title" id="modeTitle">Sessão</div><div class="mode-sub" id="modeSub">—</div></div><div class="timer" id="timer">00:00</div></div>
-    <div class="phasebar"><i id="phaseProgress"></i></div>
-    <div class="prompt"><div class="label" id="promptLabel">INSTRUÇÃO</div><div class="main" id="promptMain">Ative o microfone.</div><div class="sub" id="promptSub">O treino começa assim que o microfone estiver pronto.</div></div>
-    <div class="chordline" id="chordLine"></div>
-    <div class="note-panel"><div class="orb" id="noteOrb">—</div><div class="note-meta"><b id="noteName">Aguardando nota</b><span id="noteDetail">—</span><div class="meter"><i id="levelBar"></i></div></div></div>
-    <div class="feedback" id="feedback">—</div>
-    <div class="mini-stats"><div class="mini"><b id="statNotes">0</b><span>NOTAS</span></div><div class="mini"><b id="statHits">—</b><span>ACERTOS</span></div><div class="mini"><b id="statPhrases">0</b><span>FRASES</span></div></div>
-    <div class="session-controls"><button class="btn alt small" id="toggleBacking">BACKING: ON</button><button class="btn warn small" id="stopSession">ENCERRAR</button></div>
-  </div>
-  <div class="card">
-    <div class="livehead"><div><div class="mode-title" style="font-size:14px">Fretboard</div><div class="mode-sub">verde = tocada · roxo = alvo · contorno = permitida</div></div><span class="tag">Am</span></div>
-    <div class="wrap"><div id="fretboard"></div></div>
-  </div>
-</section>
+      <div class="mode-grid">
+        <button class="mode-card" data-mode="phrase"><b>Phrase Builder</b><span>começo, direção e resolução</span></button>
+        <button class="mode-card" data-mode="fretboard"><b>Fretboard</b><span>encontre-se no braço</span></button>
+        <button class="mode-card" data-mode="rhythm"><b>Ritmo</b><span>frases com groove</span></button>
+        <button class="mode-card" data-mode="lick"><b>Lick Lab</b><span>vocabulário e frases bonitas</span></button>
+      </div>
 
-<section class="screen" id="progressScreen">
-  <div class="hero"><div class="eyebrow">PROGRESSÃO</div><h1 style="font-size:25px">Seu mapa de habilidades.</h1><p>Os scores são estimativas práticas baseadas no que o app observa nos exercícios. Eles servem para decidir o próximo treino.</p></div>
-  <div class="section-title"><h2>Skill vector</h2><span>0–100</span></div>
-  <div class="card"><div class="skills" id="progressSkills"></div></div>
-  <div class="section-title"><h2>Histórico</h2><span>últimas sessões</span></div>
-  <div class="history" id="historyList"></div>
-</section>
+      <div class="coach-card">
+        <span class="eyebrow">COACH</span>
+        <b id="coachHeadline">Faça sua primeira sessão.</b>
+        <p id="coachBody">Depois o app decide em qual habilidade insistir.</p>
+      </div>
+    </section>
 
-<section class="screen" id="settingsScreen">
-  <div class="hero"><div class="eyebrow">AJUSTES</div><h1 style="font-size:25px">Ajuste o detector ao seu violão.</h1><p>Hammer-ons, pull-offs e slides exigem sensibilidade alta. Se começar a captar ruído, aumente o noise gate.</p></div>
-  <div class="card" style="margin-top:12px">
-    <div class="setting"><div><label>Sensibilidade</label><small>ganho antes da análise</small></div><input id="gainSlider" type="range" min="1" max="7" step="0.2"></div>
-    <div class="setting"><div><label>Noise gate</label><small>menor = capta notas mais baixas</small></div><input id="gateSlider" type="range" min="0.0005" max="0.008" step="0.0005"></div>
-    <div class="setting"><div><label>Backing volume</label><small>fones recomendados</small></div><input id="backingSlider" type="range" min="0" max="0.7" step="0.02"></div>
-    <div class="setting"><div><label>Fretboard Fog</label><small>quanto o mapa revela</small></div><input id="fogSlider" type="range" min="0" max="100" step="10"></div>
-    <button class="btn alt" id="resetData" style="margin-top:13px">ZERAR PROGRESSO</button>
-    <div class="secure-note">A análise desta versão roda no aparelho. A conexão direta com a conta ChatGPT exige uma camada segura de servidor; ela não foi simulada dentro do navegador.</div>
-  </div>
-</section>
+    <section id="lessonScreen" class="screen">
+      <div class="lesson">
+        <div class="lesson-top">
+          <div>
+            <span id="lessonLabel" class="eyebrow">AULA</span>
+            <h2 id="lessonTitle">Guided Jam</h2>
+          </div>
+          <button id="endLesson" class="ghost">ENCERRAR</button>
+        </div>
 
-<nav class="nav"><button class="active" data-screen="homeScreen"><b>⌂</b>INÍCIO</button><button data-screen="liveScreen"><b>◉</b>SESSÃO</button><button data-screen="progressScreen"><b>↗</b>PROGRESSO</button><button data-screen="settingsScreen"><b>⚙</b>AJUSTES</button></nav>
+        <div class="step-card">
+          <div id="stepCount" class="step-count">PASSO 1</div>
+          <div id="instruction" class="instruction">Aguarde...</div>
+          <div id="hint" class="hint"></div>
+          <button id="demoBtn" class="demo">▶ OUVIR EXEMPLO</button>
+          <div id="feedback" class="feedback">O tutor vai dizer quando avançar.</div>
+        </div>
+
+        <div id="chordStrip" class="chord-strip"></div>
+
+        <div class="now-playing">
+          <div id="noteOrb" class="note-orb">—</div>
+          <div class="note-copy">
+            <b id="noteText">Aguardando você tocar</b>
+            <span id="noteFunction">—</span>
+          </div>
+        </div>
+
+        <div class="fret-card">
+          <div class="fret-head">
+            <b>Fretboard</b>
+            <span>corpo ← · → headstock</span>
+          </div>
+          <div class="fret-wrap"><div id="fretboard"></div></div>
+        </div>
+
+        <button id="backingBtn" class="backing-btn">♫ BACKING ON</button>
+      </div>
+    </section>
+
+    <section id="progressScreen" class="screen">
+      <div class="hero compact">
+        <div class="eyebrow">PROGRESSO</div>
+        <h1>Seu mapa de habilidades.</h1>
+        <p>Os números ficam aqui, fora da aula. Eles servem para o tutor escolher o próximo passo.</p>
+      </div>
+      <div id="skills" class="skills"></div>
+      <div id="history" class="history"></div>
+    </section>
+
+    <section id="settingsScreen" class="screen">
+      <div class="hero compact">
+        <div class="eyebrow">AJUSTES</div>
+        <h1>Detector e áudio.</h1>
+      </div>
+      <div class="settings-card">
+        <label>Sensibilidade<input id="gainSlider" type="range" min="1" max="7" step=".2"></label>
+        <label>Noise gate<input id="gateSlider" type="range" min=".0005" max=".012" step=".0005"></label>
+        <label>Backing<input id="backingSlider" type="range" min="0" max=".7" step=".02"></label>
+        <button id="resetData" class="secondary">ZERAR PROGRESSO</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button data-screen="homeScreen" class="active">INÍCIO</button>
+    <button data-screen="lessonScreen">AULA</button>
+    <button data-screen="progressScreen">PROGRESSO</button>
+    <button data-screen="settingsScreen">AJUSTES</button>
+  </nav>
 </div>
-<div class="overlay" id="modalOverlay"><div class="modal" id="modal"></div></div>
-<div class="toast" id="toast"></div>
-<script src="./app.js?v=final1"></script>
+
+<div id="modalOverlay" class="overlay"><div id="modal" class="modal"></div></div>
+<div id="toast" class="toast"></div>
+<script src="./app.js?v=tutor4"></script>
 </body>
 </html>
