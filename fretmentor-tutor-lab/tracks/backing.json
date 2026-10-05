@@ -1,0 +1,54 @@
+{
+  "title": "Slow Blues Backing Track in Cm",
+  "artist": "Admiral Bob",
+  "source": "https://ccmixter.org/files/admiralbob77/28495",
+  "download": "https://ccmixter.org/content/admiralbob77/admiralbob77_-_Slow_Blues_Backing_Track_in_Cm.zip",
+  "license": "CC BY 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+  "bpm": 55,
+  "beatsPerBar": 4,
+  "feel": "12/8 subdivision, 4 dotted-quarter beats",
+  "sourceStartSeconds": 8.727272727272727,
+  "loopBeats": 96,
+  "loopDurationSeconds": 104.72727272727273,
+  "sourceStems": [
+    "drums",
+    "bass",
+    "rguitar",
+    "Rhodes"
+  ],
+  "adaptation": "Two complete choruses, four original recorded stems mixed with a single shared gain adjustment; original lead guitar excluded. No time stretching. 5 ms boundary fades to suppress loop clicks. Vorbis conversion.",
+  "sha256": "05779bd646a35d1f28f6f7fe65359ae8022907eaf93dbd88e6786817040ae2dd",
+  "sourceArchiveSha256": "3fb271c1c4a896e4d2e520a7383087283d9c6db6f71aa80482081d11d3ebc2cf",
+  "harmonicMap": [
+    [
+      0,
+      "Cm7"
+    ],
+    [
+      16,
+      "Fm7"
+    ],
+    [
+      24,
+      "Cm7"
+    ],
+    [
+      32,
+      "Gm7"
+    ],
+    [
+      36,
+      "Fm7"
+    ],
+    [
+      40,
+      "Cm7"
+    ],
+    [
+      46,
+      "Gm7"
+    ]
+  ],
+  "mapMethod": "55 BPM stated by artist; percussion onsets match triplet subdivisions. Bass first beats and Rhodes spectral pitch classes confirm Cm/Fm/Gm and last-bar turnaround. Fixed score map, no claimed live polyphonic note recognition."
+}

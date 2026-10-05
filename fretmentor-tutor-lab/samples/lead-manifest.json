@@ -1,0 +1,562 @@
+[
+  {
+    "midi": 55,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 2,
+    "url": "samples/lead/55-pick-soft-2.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 1,
+    "url": "samples/lead/55-pick-soft-1.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 2,
+    "url": "samples/lead/55-pick-medium-2.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 1,
+    "url": "samples/lead/55-pick-medium-1.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 2,
+    "url": "samples/lead/55-pick-hard-2.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 1,
+    "url": "samples/lead/55-pick-hard-1.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 2,
+    "url": "samples/lead/58-pick-soft-2.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 1,
+    "url": "samples/lead/58-pick-soft-1.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 2,
+    "url": "samples/lead/58-pick-medium-2.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 1,
+    "url": "samples/lead/58-pick-medium-1.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 2,
+    "url": "samples/lead/58-pick-hard-2.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 1,
+    "url": "samples/lead/58-pick-hard-1.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 2,
+    "url": "samples/lead/63-pick-soft-2.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 1,
+    "url": "samples/lead/63-pick-soft-1.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 2,
+    "url": "samples/lead/63-pick-medium-2.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 1,
+    "url": "samples/lead/63-pick-medium-1.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 2,
+    "url": "samples/lead/63-pick-hard-2.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 1,
+    "url": "samples/lead/63-pick-hard-1.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 2,
+    "url": "samples/lead/65-pick-soft-2.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 1,
+    "url": "samples/lead/65-pick-soft-1.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 2,
+    "url": "samples/lead/65-pick-medium-2.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 1,
+    "url": "samples/lead/65-pick-medium-1.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 2,
+    "url": "samples/lead/65-pick-hard-2.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 1,
+    "url": "samples/lead/65-pick-hard-1.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 2,
+    "url": "samples/lead/67-pick-soft-2.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 1,
+    "url": "samples/lead/67-pick-soft-1.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 2,
+    "url": "samples/lead/67-pick-medium-2.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 1,
+    "url": "samples/lead/67-pick-medium-1.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 2,
+    "url": "samples/lead/67-pick-hard-2.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 1,
+    "url": "samples/lead/67-pick-hard-1.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 2,
+    "url": "samples/lead/70-pick-soft-2.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 1,
+    "url": "samples/lead/70-pick-soft-1.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 2,
+    "url": "samples/lead/70-pick-medium-2.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 1,
+    "url": "samples/lead/70-pick-medium-1.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 2,
+    "url": "samples/lead/70-pick-hard-2.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 1,
+    "url": "samples/lead/70-pick-hard-1.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 2,
+    "url": "samples/lead/72-pick-soft-2.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 1,
+    "url": "samples/lead/72-pick-soft-1.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 2,
+    "url": "samples/lead/72-pick-medium-2.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 1,
+    "url": "samples/lead/72-pick-medium-1.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 2,
+    "url": "samples/lead/72-pick-hard-2.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 1,
+    "url": "samples/lead/72-pick-hard-1.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 2,
+    "url": "samples/lead/75-pick-soft-2.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "pick",
+    "layer": "soft",
+    "rr": 1,
+    "url": "samples/lead/75-pick-soft-1.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 2,
+    "url": "samples/lead/75-pick-medium-2.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "pick",
+    "layer": "medium",
+    "rr": 1,
+    "url": "samples/lead/75-pick-medium-1.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 2,
+    "url": "samples/lead/75-pick-hard-2.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "pick",
+    "layer": "hard",
+    "rr": 1,
+    "url": "samples/lead/75-pick-hard-1.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/55-hammer-on-any-2.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/55-hammer-on-any-1.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/58-hammer-on-any-2.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/58-hammer-on-any-1.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/63-hammer-on-any-2.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/63-hammer-on-any-1.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/65-hammer-on-any-2.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/65-hammer-on-any-1.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/67-hammer-on-any-2.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/67-hammer-on-any-1.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/70-hammer-on-any-2.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/70-hammer-on-any-1.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/72-hammer-on-any-2.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/72-hammer-on-any-1.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/75-hammer-on-any-2.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "hammer-on",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/75-hammer-on-any-1.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/55-staccato-any-2.mp3"
+  },
+  {
+    "midi": 55,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/55-staccato-any-1.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/58-staccato-any-2.mp3"
+  },
+  {
+    "midi": 58,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/58-staccato-any-1.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/63-staccato-any-2.mp3"
+  },
+  {
+    "midi": 63,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/63-staccato-any-1.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/65-staccato-any-2.mp3"
+  },
+  {
+    "midi": 65,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/65-staccato-any-1.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/67-staccato-any-2.mp3"
+  },
+  {
+    "midi": 67,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/67-staccato-any-1.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/70-staccato-any-2.mp3"
+  },
+  {
+    "midi": 70,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/70-staccato-any-1.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/72-staccato-any-2.mp3"
+  },
+  {
+    "midi": 72,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/72-staccato-any-1.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 2,
+    "url": "samples/lead/75-staccato-any-2.mp3"
+  },
+  {
+    "midi": 75,
+    "articulation": "staccato",
+    "layer": "any",
+    "rr": 1,
+    "url": "samples/lead/75-staccato-any-1.mp3"
+  }
+]

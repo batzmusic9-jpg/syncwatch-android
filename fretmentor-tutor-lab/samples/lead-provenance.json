@@ -1,0 +1,402 @@
+[
+  {
+    "file": "samples/lead/55-pick-soft-2.mp3",
+    "source": "Samples/green/ord/twang_g4_p_rr2.wav",
+    "sha256": "bbd4287e725f4bf2bd70cd051cc756a9c7caf2a8d2083fff85357e33410c6f25"
+  },
+  {
+    "file": "samples/lead/55-pick-soft-1.mp3",
+    "source": "Samples/green/ord/twang_g4_p_rr1.wav",
+    "sha256": "3ba747d430da13c6e000f90cf010b65f52fe04944d3f665ca1f1843a5a087897"
+  },
+  {
+    "file": "samples/lead/55-pick-medium-2.mp3",
+    "source": "Samples/green/ord/twang_g4_mf_rr2.wav",
+    "sha256": "82f0ea331117497a63f33164a1aedeb103aba7c394630664ab0594952f74c367"
+  },
+  {
+    "file": "samples/lead/55-pick-medium-1.mp3",
+    "source": "Samples/green/ord/twang_g4_mf_rr1.wav",
+    "sha256": "d7c7c5beacc8e8ca683bf1bfcc1ebad7645f3bf09b177a46f157d0bfa565db3c"
+  },
+  {
+    "file": "samples/lead/55-pick-hard-2.mp3",
+    "source": "Samples/green/ord/twang_g4_f_rr2.wav",
+    "sha256": "d76d5a86c38e79b8a8d0e5d7ed301aa9a65feef60a8a9e75dbed633c2f71f75c"
+  },
+  {
+    "file": "samples/lead/55-pick-hard-1.mp3",
+    "source": "Samples/green/ord/twang_g4_f_rr1.wav",
+    "sha256": "a10c8898ac6553fdfdf568d3ac6f33f4f7f503ccd5e7c75b965207e2b93942c3"
+  },
+  {
+    "file": "samples/lead/58-pick-soft-2.mp3",
+    "source": "Samples/green/ord/twang_bb4_p_rr2.wav",
+    "sha256": "0f86c8f97df426cb8c47d2b5d26d22254bbf5db2a7a59c0d2e6381f6130d5ccc"
+  },
+  {
+    "file": "samples/lead/58-pick-soft-1.mp3",
+    "source": "Samples/green/ord/twang_bb4_p_rr1.wav",
+    "sha256": "cd1ee2985740190804b07ba6e51fd647bdb14f66505247706ce52e948b478a63"
+  },
+  {
+    "file": "samples/lead/58-pick-medium-2.mp3",
+    "source": "Samples/green/ord/twang_bb4_mf_rr2.wav",
+    "sha256": "dd62a135a2dc85655bea2c59d70f55519d15c45d502c061b9da4545127d7406c"
+  },
+  {
+    "file": "samples/lead/58-pick-medium-1.mp3",
+    "source": "Samples/green/ord/twang_bb4_mf_rr1.wav",
+    "sha256": "b939ab23f350fae87e4759ee7676d7f8fb51d105f4b85d41e20ad785b019b43a"
+  },
+  {
+    "file": "samples/lead/58-pick-hard-2.mp3",
+    "source": "Samples/green/ord/twang_bb4_f_rr2.wav",
+    "sha256": "32c9f8eda9ec65ec0f795d65d07950b376e5bb3ab580bd3e8d0fcd5fa5ba2e83"
+  },
+  {
+    "file": "samples/lead/58-pick-hard-1.mp3",
+    "source": "Samples/green/ord/twang_bb4_f_rr1.wav",
+    "sha256": "866e7e6c4c614d2b1172e8946632f4e1b6400e6495508e942278dd5a48cf8322"
+  },
+  {
+    "file": "samples/lead/63-pick-soft-2.mp3",
+    "source": "Samples/green/ord/twang_eb5_p_rr2.wav",
+    "sha256": "9328ee162e0a06c6b8b33da870d20685f508441f336f4829b2e575915c3ed2f5"
+  },
+  {
+    "file": "samples/lead/63-pick-soft-1.mp3",
+    "source": "Samples/green/ord/twang_eb5_p_rr1.wav",
+    "sha256": "8aecf3e4807cf8c3204c219e5c180527230e1f0f46ceac2096848e3698bd8008"
+  },
+  {
+    "file": "samples/lead/63-pick-medium-2.mp3",
+    "source": "Samples/green/ord/twang_eb5_mf_rr2.wav",
+    "sha256": "8a7f928d6c9b9a8aabbcc2c27926a588dd9199447afda9c0dabada3479111790"
+  },
+  {
+    "file": "samples/lead/63-pick-medium-1.mp3",
+    "source": "Samples/green/ord/twang_eb5_mf_rr1.wav",
+    "sha256": "0bd2ee01ae8ca9b612e319615f58673339c99199a5b5ae6f6a68edec63f172ca"
+  },
+  {
+    "file": "samples/lead/63-pick-hard-2.mp3",
+    "source": "Samples/green/ord/twang_eb5_f_rr2.wav",
+    "sha256": "1b7b2f2e5189ddf3b25249cd1c1efedb0a7bd77ef5a7169051e5c47b9e4b3c84"
+  },
+  {
+    "file": "samples/lead/63-pick-hard-1.mp3",
+    "source": "Samples/green/ord/twang_eb5_f_rr1.wav",
+    "sha256": "3f7ee5514a3f99daf525dd89149572c7989e07aad23047439fa4ce51333fc42b"
+  },
+  {
+    "file": "samples/lead/65-pick-soft-2.mp3",
+    "source": "Samples/green/ord/twang_f5_p_rr2.wav",
+    "sha256": "98456ca4bb6598a959c79b95d01077bafbef3b266929ec9c615e9ba8f9c01df6"
+  },
+  {
+    "file": "samples/lead/65-pick-soft-1.mp3",
+    "source": "Samples/green/ord/twang_f5_p_rr1.wav",
+    "sha256": "2c4b95876e67a0003b4fbbf2c83280480e81b1c6db9d86ef8cbf6abf0d5d9d22"
+  },
+  {
+    "file": "samples/lead/65-pick-medium-2.mp3",
+    "source": "Samples/green/ord/twang_f5_mf_rr2.wav",
+    "sha256": "bf8fbe9a2a4a16ccff8bb596769dfa15f97b96f2280123b78f8e84d270b86422"
+  },
+  {
+    "file": "samples/lead/65-pick-medium-1.mp3",
+    "source": "Samples/green/ord/twang_f5_mf_rr1.wav",
+    "sha256": "1e435edbda2e535088b97d58aa39b676d9143704bbfe7a9db1b76cd049b5556e"
+  },
+  {
+    "file": "samples/lead/65-pick-hard-2.mp3",
+    "source": "Samples/green/ord/twang_f5_f_rr2.wav",
+    "sha256": "c69ca4fb805130bcb8583611ed79a0327c191257ef9c0b1af6aef3bb874dca71"
+  },
+  {
+    "file": "samples/lead/65-pick-hard-1.mp3",
+    "source": "Samples/green/ord/twang_f5_f_rr1.wav",
+    "sha256": "6e3c82e84e7a5e0f4c782d404c5bad855a1f00209289d1353495024090ea216f"
+  },
+  {
+    "file": "samples/lead/67-pick-soft-2.mp3",
+    "source": "Samples/green/ord/twang_g5_p_rr2.wav",
+    "sha256": "c59c09fe6347180ed177061002937d75746e025a59a5a2dc4351dd01d1043512"
+  },
+  {
+    "file": "samples/lead/67-pick-soft-1.mp3",
+    "source": "Samples/green/ord/twang_g5_p_rr1.wav",
+    "sha256": "06e0a335fd090c21911e673f663f18d9c70467de566ec3c61ea9ac2672a1aa82"
+  },
+  {
+    "file": "samples/lead/67-pick-medium-2.mp3",
+    "source": "Samples/green/ord/twang_g5_mf_rr2.wav",
+    "sha256": "e36e05ed9ceb02fac1205b71cb0516c6cc2caacf96df3d7aa23cde34121f49e7"
+  },
+  {
+    "file": "samples/lead/67-pick-medium-1.mp3",
+    "source": "Samples/green/ord/twang_g5_mf_rr1.wav",
+    "sha256": "8763f58ba6a6aa53d7376fdbacb452c90a0ffda3884589c9a6503d6a47dc8703"
+  },
+  {
+    "file": "samples/lead/67-pick-hard-2.mp3",
+    "source": "Samples/green/ord/twang_g5_f_rr2.wav",
+    "sha256": "7c153ec71cd3cfeab4982361f9ac2f0bf5d5d68ecf359a480d16623c314191c1"
+  },
+  {
+    "file": "samples/lead/67-pick-hard-1.mp3",
+    "source": "Samples/green/ord/twang_g5_f_rr1.wav",
+    "sha256": "78eca4e5e9b7c6c2f74da1f1c2891f841995e371e15315fd94aac19138ff3334"
+  },
+  {
+    "file": "samples/lead/70-pick-soft-2.mp3",
+    "source": "Samples/green/ord/twang_bb5_p_rr2.wav",
+    "sha256": "1346a5721291bfe04deab55ab8d1e4077dfbbbc7a94a3cb830fc87d33f5d7bfe"
+  },
+  {
+    "file": "samples/lead/70-pick-soft-1.mp3",
+    "source": "Samples/green/ord/twang_bb5_p_rr1.wav",
+    "sha256": "65dcdfbeb66aa8fa6496922e75acce61613d78ef6e7eec3b5911a516c2022db6"
+  },
+  {
+    "file": "samples/lead/70-pick-medium-2.mp3",
+    "source": "Samples/green/ord/twang_bb5_mf_rr2.wav",
+    "sha256": "79d1feaccd297d999d44c328694e0c1c168105523336719a0d82922d74f97a80"
+  },
+  {
+    "file": "samples/lead/70-pick-medium-1.mp3",
+    "source": "Samples/green/ord/twang_bb5_mf_rr1.wav",
+    "sha256": "da5c6b67957f96042e43938b09a7e30c06d9b8577280e5777aa99fb42431253e"
+  },
+  {
+    "file": "samples/lead/70-pick-hard-2.mp3",
+    "source": "Samples/green/ord/twang_bb5_f_rr2.wav",
+    "sha256": "f34352ebfa383634d09fe9d8d372bf28baea8164217adf73df08d1d7709699f9"
+  },
+  {
+    "file": "samples/lead/70-pick-hard-1.mp3",
+    "source": "Samples/green/ord/twang_bb5_f_rr1.wav",
+    "sha256": "ed4954a77c1a78af7eebc4fac9102c6e2e58a1432a6854591532988a1c2b5008"
+  },
+  {
+    "file": "samples/lead/72-pick-soft-2.mp3",
+    "source": "Samples/green/ord/twang_c6_p_rr2.wav",
+    "sha256": "2ef05caefcd396c35a11bde3e42832581f538673f6bf94e99c7981c3c2bd5ed0"
+  },
+  {
+    "file": "samples/lead/72-pick-soft-1.mp3",
+    "source": "Samples/green/ord/twang_c6_p_rr1.wav",
+    "sha256": "72b0b4ae93689bc99634b6a1acdb4f23760c34425836814831850d5a5104c7c1"
+  },
+  {
+    "file": "samples/lead/72-pick-medium-2.mp3",
+    "source": "Samples/green/ord/twang_c6_mf_rr2.wav",
+    "sha256": "128e7bfe334d87843c038264bac255e1f739e33693faf5f96c25eefbec54bab6"
+  },
+  {
+    "file": "samples/lead/72-pick-medium-1.mp3",
+    "source": "Samples/green/ord/twang_c6_mf_rr1.wav",
+    "sha256": "4a9d6305dc8dc36ae116d4a6a7a7a1311c7c4c2bb7a0a05602ba9362d395b643"
+  },
+  {
+    "file": "samples/lead/72-pick-hard-2.mp3",
+    "source": "Samples/green/ord/twang_c6_f_rr2.wav",
+    "sha256": "6ea72eeaab492c9004f602db1367e99b35a79e672d0bed33b4991ce3b41a86ca"
+  },
+  {
+    "file": "samples/lead/72-pick-hard-1.mp3",
+    "source": "Samples/green/ord/twang_c6_f_rr1.wav",
+    "sha256": "4b9b6521e8ba25826263efc0ed36ff1cfb5f6661688ffc875950ab81b4d4f33f"
+  },
+  {
+    "file": "samples/lead/75-pick-soft-2.mp3",
+    "source": "Samples/green/ord/twang_eb6_p_rr2.wav",
+    "sha256": "bc6366e9c18c0541f593e704bad3cae2b18aef22da2aac23d390607a8e2ed52c"
+  },
+  {
+    "file": "samples/lead/75-pick-soft-1.mp3",
+    "source": "Samples/green/ord/twang_eb6_p_rr1.wav",
+    "sha256": "ebd1c56dc94c96d7f38a7016ee2b5d00b6b20b904524bfb7a7c9e07842d3f954"
+  },
+  {
+    "file": "samples/lead/75-pick-medium-2.mp3",
+    "source": "Samples/green/ord/twang_eb6_mf_rr2.wav",
+    "sha256": "0daf289dc4825e174b3b979a9b5f8495f791fc08afcdfab792cdea3ffb73ae2a"
+  },
+  {
+    "file": "samples/lead/75-pick-medium-1.mp3",
+    "source": "Samples/green/ord/twang_eb6_mf_rr1.wav",
+    "sha256": "d9a848a904cbbdd968c451d672f8a98f6e1059f84bf5df87ae81d7ede67d6a0d"
+  },
+  {
+    "file": "samples/lead/75-pick-hard-2.mp3",
+    "source": "Samples/green/ord/twang_eb6_f_rr2.wav",
+    "sha256": "ee62a9f3c525612c9e8b107a201aea0aa0ad89762a6aebdb740537948cab0253"
+  },
+  {
+    "file": "samples/lead/75-pick-hard-1.mp3",
+    "source": "Samples/green/ord/twang_eb6_f_rr1.wav",
+    "sha256": "23465303aa26044aa1933231e47ef23959ac4644b6711cbedefc4b02dc4ad1d6"
+  },
+  {
+    "file": "samples/lead/55-hammer-on-any-2.mp3",
+    "source": "Samples/green/hammer/hammer_g4_rr2.wav",
+    "sha256": "497c7352d8b9f19f5a08b7bf95cb7e8b4641101a3737ac12fb21950da1f2f313"
+  },
+  {
+    "file": "samples/lead/55-hammer-on-any-1.mp3",
+    "source": "Samples/green/hammer/hammer_g4_rr1.wav",
+    "sha256": "b0ac9a2a93b7256c3374192c28a98f47709fd1ecc5aa6ade267632ad414897ce"
+  },
+  {
+    "file": "samples/lead/58-hammer-on-any-2.mp3",
+    "source": "Samples/green/hammer/hammer_bb4_rr2.wav",
+    "sha256": "d3a3e2d26de72f6bb854ea624877c7ecd3cc3fb25bd2bce99c7339e8b3a5f586"
+  },
+  {
+    "file": "samples/lead/58-hammer-on-any-1.mp3",
+    "source": "Samples/green/hammer/hammer_bb4_rr1.wav",
+    "sha256": "e49fe5252dabd4ffce0e587efcc9860a9ee70d30da79aedc81b2c1a6fc236e7e"
+  },
+  {
+    "file": "samples/lead/63-hammer-on-any-2.mp3",
+    "source": "Samples/green/hammer/hammer_eb5_rr2.wav",
+    "sha256": "f0bb234ec6f9a9addf7dbe312dd378f61b961be908e01b2346ba9e67ccbec9d0"
+  },
+  {
+    "file": "samples/lead/63-hammer-on-any-1.mp3",
+    "source": "Samples/green/hammer/hammer_eb5_rr1.wav",
+    "sha256": "2885cd07e6e25b3a9e04bce41badadc3cadebd4a57395a12bf6c24e97fda4271"
+  },
+  {
+    "file": "samples/lead/65-hammer-on-any-2.mp3",
+    "source": "Samples/green/hammer/hammer_f5_rr2.wav",
+    "sha256": "1481e40c012956bc851c413f135d0d1e444246fd0b830b6728f6afd1a72473e0"
+  },
+  {
+    "file": "samples/lead/65-hammer-on-any-1.mp3",
+    "source": "Samples/green/hammer/hammer_f5_rr1.wav",
+    "sha256": "e06d0ddda75e8b444a0ea2b8140d3c3fc53d4e1a2be547673084e4d73bcad5fa"
+  },
+  {
+    "file": "samples/lead/67-hammer-on-any-2.mp3",
+    "source": "Samples/green/hammer/hammer_g5_rr2.wav",
+    "sha256": "595403c9c6624618f6f83f35f159aab6fd21de2643180594039aa9937ea3da4b"
+  },
+  {
+    "file": "samples/lead/67-hammer-on-any-1.mp3",
+    "source": "Samples/green/hammer/hammer_g5_rr1.wav",
+    "sha256": "e9417ee089ddf347a2feb78cf288bf92bff51c98abfa7a6b78cb17b900610a59"
+  },
+  {
+    "file": "samples/lead/70-hammer-on-any-2.mp3",
+    "source": "Samples/green/hammer/hammer_bb5_rr2.wav",
+    "sha256": "f88879cd593bc24a796b025bae28cd72e83641bd878106ec5acae04a816945c6"
+  },
+  {
+    "file": "samples/lead/70-hammer-on-any-1.mp3",
+    "source": "Samples/green/hammer/hammer_bb5_rr1.wav",
+    "sha256": "034a826bc3521257281ca029a388820f2c035ca52f61065fb5946bfe8cf312fa"
+  },
+  {
+    "file": "samples/lead/72-hammer-on-any-2.mp3",
+    "source": "Samples/green/hammer/hammer_c6_rr2.wav",
+    "sha256": "e0f1625899e3f36dd6328eebc9327caf301354fbbbab262bcf678dd3985dc564"
+  },
+  {
+    "file": "samples/lead/72-hammer-on-any-1.mp3",
+    "source": "Samples/green/hammer/hammer_c6_rr1.wav",
+    "sha256": "5db14d9a6f82b6ba719f4609d2b8ea3d6b706d04e786d138d53e994a691399a1"
+  },
+  {
+    "file": "samples/lead/75-hammer-on-any-2.mp3",
+    "source": "Samples/green/hammer/hammer_eb6_rr2.wav",
+    "sha256": "a97007dacb1c3448d3e79017cb99a3c1ce8b3b7e5a919379b6ff37733e5a7c00"
+  },
+  {
+    "file": "samples/lead/75-hammer-on-any-1.mp3",
+    "source": "Samples/green/hammer/hammer_eb6_rr1.wav",
+    "sha256": "4ce6be237828ed2f41e7d8591469655c5698c16b2c58d6177ccd45ed63f290ae"
+  },
+  {
+    "file": "samples/lead/55-staccato-any-2.mp3",
+    "source": "Samples/green/stac/staccato_g4_rr2.wav",
+    "sha256": "c1dec97b21831ea2d627e8407a3a00e3c07aceb6acfdb8779b0b8b7ac1b62ef1"
+  },
+  {
+    "file": "samples/lead/55-staccato-any-1.mp3",
+    "source": "Samples/green/stac/staccato_g4_rr1.wav",
+    "sha256": "8e4c5e03a60f39f7aebcf5bd7dbf17a72248a7143a1186663bc29533bfb305d9"
+  },
+  {
+    "file": "samples/lead/58-staccato-any-2.mp3",
+    "source": "Samples/green/stac/staccato_bb4_rr2.wav",
+    "sha256": "bcbf7d0acc869b148ba576329e9bd5fb97ba09379953c78e29ec752f33d619bc"
+  },
+  {
+    "file": "samples/lead/58-staccato-any-1.mp3",
+    "source": "Samples/green/stac/staccato_bb4_rr1.wav",
+    "sha256": "9e3afcb6451f19d63ae4a99650ad04f651e428591734cea6220d5e472e7403bc"
+  },
+  {
+    "file": "samples/lead/63-staccato-any-2.mp3",
+    "source": "Samples/green/stac/staccato_eb5_rr2.wav",
+    "sha256": "f2b8127a0ba4021741252555cf64afc19381e4b57a689ea18f421e6bc9c91ff4"
+  },
+  {
+    "file": "samples/lead/63-staccato-any-1.mp3",
+    "source": "Samples/green/stac/staccato_eb5_rr1.wav",
+    "sha256": "d8b4c895246149be68b2de8a43fd7407464c0031cbf62d5c956dd36fe6a6ca2f"
+  },
+  {
+    "file": "samples/lead/65-staccato-any-2.mp3",
+    "source": "Samples/green/stac/staccato_f5_rr2.wav",
+    "sha256": "ec51b5842d73d323a19a0d12cae24f13f7e0d4f4796a5af03262b380a0652aa1"
+  },
+  {
+    "file": "samples/lead/65-staccato-any-1.mp3",
+    "source": "Samples/green/stac/staccato_f5_rr1.wav",
+    "sha256": "ab7a690c84c1fcab9e42bf7aa755e35ab69df174e83be6c0b2376795d41f318e"
+  },
+  {
+    "file": "samples/lead/67-staccato-any-2.mp3",
+    "source": "Samples/green/stac/staccato_g5_rr2.wav",
+    "sha256": "c425407aeb4f5ba942975540ca5d73f05c239a35f008518b798a0c04162439b6"
+  },
+  {
+    "file": "samples/lead/67-staccato-any-1.mp3",
+    "source": "Samples/green/stac/staccato_g5_rr1.wav",
+    "sha256": "871cfc3d47a124c53468bff8f8dc3a28d11c34c3f5f3b61854d507f17d930dfc"
+  },
+  {
+    "file": "samples/lead/70-staccato-any-2.mp3",
+    "source": "Samples/green/stac/staccato_bb5_rr2.wav",
+    "sha256": "9379cca3c7fcf68d9a61263650237553b1c8b692cd62f2d1e78d416b8eb06bd8"
+  },
+  {
+    "file": "samples/lead/70-staccato-any-1.mp3",
+    "source": "Samples/green/stac/staccato_bb5_rr1.wav",
+    "sha256": "a13dd1161912bf7687153e354744f717710c72ed8c70cfa536c10c0052ece55f"
+  },
+  {
+    "file": "samples/lead/72-staccato-any-2.mp3",
+    "source": "Samples/green/stac/staccato_c6_rr2.wav",
+    "sha256": "be7e8eaea5007834069b4d14e635ff4f259522d16138dd6e90ff8dfeaf109fa4"
+  },
+  {
+    "file": "samples/lead/72-staccato-any-1.mp3",
+    "source": "Samples/green/stac/staccato_c6_rr1.wav",
+    "sha256": "41a67ca5522cadd13d669f4170e7dfeaf7ac1e9c1c36e187e622f4f16fdb6a64"
+  },
+  {
+    "file": "samples/lead/75-staccato-any-2.mp3",
+    "source": "Samples/green/stac/staccato_eb6_rr2.wav",
+    "sha256": "26c0c2e9407aa349cdccd25202aebc8c524c8b82297e2c9c8e9524de2d0a3ce7"
+  },
+  {
+    "file": "samples/lead/75-staccato-any-1.mp3",
+    "source": "Samples/green/stac/staccato_eb6_rr1.wav",
+    "sha256": "925e9aed5fc64ca9773eb9e8bd73cbdbc5be9f8f8bdebf03acd2de087fde2f0d"
+  }
+]
