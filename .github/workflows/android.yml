@@ -2,7 +2,7 @@ name: Android APK
 
 on:
   push:
-    branches: [main, playback-v1.2]
+    branches: [main, playback-v1.2, ui-v1.2.1]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -33,7 +33,7 @@ jobs:
       - name: Install Android SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - name: Test, lint and build installable APK
-        run: gradle --no-daemon testDebugUnitTest lintDebug assembleDebug
+        run: gradle --no-daemon -Puniversal=true testDebugUnitTest lintDebug assembleDebug
       - name: Create synthetic MP4 and MKV HEVC AC3 fixtures
         run: |
           sudo apt-get update -qq
@@ -57,8 +57,9 @@ jobs:
           disable-animations: true
           script: |
             adb logcat -c
-            gradle --no-daemon connectedDebugAndroidTest || { adb logcat -d > app/build/reports/native-logcat.txt; exit 1; }
+            gradle --no-daemon -Puniversal=true connectedDebugAndroidTest || { adb logcat -d > app/build/reports/native-logcat.txt; adb pull /sdcard/Download/syncwatch-ui app/build/reports/ui || true; exit 1; }
             adb logcat -d > app/build/reports/native-logcat.txt
+            adb pull /sdcard/Download/syncwatch-ui app/build/reports/ui
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -n com.batz.syncwatch/.MainActivity
             sleep 2
@@ -69,18 +70,38 @@ jobs:
             sleep 2
             adb shell screencap -p /sdcard/fullscreen.png
             adb pull /sdcard/fullscreen.png app/build/reports/fullscreen.png
-      - name: Verify and package APK
+      - name: Export UI previews for visual review
+        if: always()
+        run: python3 .github/scripts/export-ui-previews.py
+      - name: Build, verify and package ARM64 and universal APKs
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/SyncWatch-1.2.0.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/SyncWatch-1.2.0.apk
-          cd dist
-          sha256sum SyncWatch-1.2.0.apk | tee SHA256SUMS.txt
-      - name: Upload APK
+          cp app/build/outputs/apk/debug/app-debug.apk dist/SyncWatch-1.2.1-universal.apk
+          gradle --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk dist/SyncWatch-1.2.1-arm64.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/SyncWatch-1.2.1-arm64.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/SyncWatch-1.2.1-universal.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/SyncWatch-1.2.1-arm64.apk | head -n 1
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/SyncWatch-1.2.1-universal.apk | head -n 1
+          python3 .github/scripts/verify-apks.py
+      - name: Upload ARM64 APK
         uses: actions/upload-artifact@v4
         with:
-          name: SyncWatch-APK
-          path: dist/
+          name: SyncWatch-1.2.1-arm64
+          path: |
+            dist/SyncWatch-1.2.1-arm64.apk
+            dist/SHA256SUMS.txt
+            dist/APK-sizes.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload universal APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SyncWatch-1.2.1-universal
+          path: |
+            dist/SyncWatch-1.2.1-universal.apk
+            dist/SHA256SUMS.txt
+            dist/APK-sizes.json
           if-no-files-found: error
           retention-days: 30
       - name: Upload validation reports
@@ -91,4 +112,6 @@ jobs:
           path: |
             app/build/reports/
             app/build/test-results/
+            dist/APK-sizes.json
+            dist/SHA256SUMS.txt
           if-no-files-found: ignore
