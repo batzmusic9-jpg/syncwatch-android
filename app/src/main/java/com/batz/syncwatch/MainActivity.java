@@ -44,7 +44,7 @@ public final class MainActivity extends AppCompatActivity {
     private String connectHost = "syncplay.pl";
     private int connectPort = 8997;
     private boolean requireSecure = true;
-    private boolean fullscreen, playerSurfaceDetached;
+    private boolean fullscreen;
     private FrameLayout screen, videoHost;
     private ScrollView scroll;
     private Button subtitleButton;
@@ -361,7 +361,6 @@ public final class MainActivity extends AppCompatActivity {
         if (fullscreen != value) {
             fullscreen = value;
             playerView.detachSurface();
-            playerSurfaceDetached = true;
             ((ViewGroup) playerView.getParent()).removeView(playerView);
             if (value) {
                 scroll.setVisibility(View.GONE);
@@ -371,10 +370,8 @@ public final class MainActivity extends AppCompatActivity {
                 scroll.setVisibility(View.VISIBLE);
                 videoHost.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
             }
-        }
-        if (playerView.getChildAt(0) instanceof ViewGroup && fullscreen == value) {
-            // Attach after reparenting, never recreate the media or its logical playback state.
-            if (playerSurfaceDetached) { playerView.attachSurface(); playerSurfaceDetached = false; }
+            // Reattach the output without recreating the media or its logical playback state.
+            playerView.attachSurface();
         }
         playerView.setFullscreenButtonState(value);
         WindowInsetsControllerCompat bars = WindowCompat.getInsetsController(getWindow(), screen);
