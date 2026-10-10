@@ -229,7 +229,8 @@ public class PlaybackIntegrationTest {
                 assertEquals(position, player(a).getCurrentPosition(), 100);
                 invoke(a, "setFullscreen", new Class<?>[]{boolean.class, boolean.class}, false, false);
                 assertEquals(View.VISIBLE, ((ScrollView) field(a, "scroll")).getVisibility());
-                assertSame(field(a, "videoHost"), ((View) field(a, "playerView")).getParent());
+                assertSame("Native video texture must stay attached across fullscreen changes",
+                        field(a, "screen"), ((View) field(a, "playerView")).getParent());
                 setField(a, "subtitleOffset", 500L);
                 invoke(a, "refreshSubtitles", new Class<?>[]{});
                 assertEquals(500000, ((LibVlcPlaybackEngine) player(a)).nativeSubtitleDelay());
