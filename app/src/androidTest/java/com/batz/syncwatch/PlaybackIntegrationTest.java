@@ -277,8 +277,16 @@ public class PlaybackIntegrationTest {
             scenario.onActivity(a -> {
                 assertEquals(player(a).audioTracks().get(1).id, player(a).selectedAudio());
                 assertEquals(player(a).subtitleTracks().get(1).id, player(a).selectedSubtitle());
+                player(a).pause();
+                long position = player(a).getCurrentPosition();
+                player(a).setSubtitleOffset(500);
+                assertEquals(500000, ((LibVlcPlaybackEngine) player(a)).nativeSubtitleDelay());
+                player(a).setSubtitleOffset(-500);
+                assertEquals(-500000, ((LibVlcPlaybackEngine) player(a)).nativeSubtitleDelay());
+                assertEquals(position, player(a).getCurrentPosition(), 200);
                 assertTrue(player(a).selectSubtitle(-1));
                 player(a).seekTo(12000);
+                player(a).play();
             });
             SystemClock.sleep(800);
             scenario.onActivity(a -> {
@@ -286,6 +294,32 @@ public class PlaybackIntegrationTest {
                 player(a).pause();
                 assertFalse(player(a).getPlayWhenReady());
             });
+        }
+    }
+
+    @Test public void externalVttRendersAndDoesNotReplaceMedia() throws Exception {
+        File video = fixture("sync-test.mp4");
+        File subtitle = new File(video.getParentFile(), "test.vtt");
+        try (FileOutputStream output = new FileOutputStream(subtitle)) {
+            output.write("WEBVTT\n\n00:00:00.000 --> 00:00:18.000\nVTT subtitle test\n".getBytes(StandardCharsets.UTF_8));
+        }
+        AtomicBoolean rendered = new AtomicBoolean();
+        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(a -> invoke(a, "openVideo", new Class<?>[]{Uri.class, long.class}, Uri.fromFile(video), 4000L));
+            waitUntilReady(scenario);
+            scenario.onActivity(a -> {
+                long duration = player(a).getDuration();
+                long position = player(a).getCurrentPosition();
+                invoke(a, "loadSubtitle", new Class<?>[]{Uri.class}, Uri.fromFile(subtitle));
+                assertEquals(duration, player(a).getDuration());
+                assertEquals(position, player(a).getCurrentPosition(), 100);
+                player(a).play();
+            });
+            for (int i = 0; i < 100 && !rendered.get(); i++) {
+                scenario.onActivity(a -> rendered.set(player(a).selectedSubtitle() >= 0 && whitePixels(a) > 30));
+                SystemClock.sleep(100);
+            }
+            assertTrue("LibVLC must render the external VTT text", rendered.get());
         }
     }
 }
