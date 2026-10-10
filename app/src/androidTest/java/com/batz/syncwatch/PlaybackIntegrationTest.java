@@ -227,6 +227,16 @@ public class PlaybackIntegrationTest {
                 assertSame(field(a, "screen"), ((View) field(a, "playerView")).getParent());
                 assertSame(before, player(a));
                 assertEquals(position, player(a).getCurrentPosition(), 100);
+                player(a).play();
+            });
+            SystemClock.sleep(800);
+            scenario.onActivity(a -> {
+                View full = (View) field(a, "playerView"), window = (View) field(a, "screen");
+                assertEquals(window.getWidth(), full.getWidth());
+                assertEquals(window.getHeight(), full.getHeight());
+                assertTrue("Fullscreen must display the actual blue video", bluePixels(a) > 1000);
+                player(a).pause();
+                long position = player(a).getCurrentPosition();
                 invoke(a, "setFullscreen", new Class<?>[]{boolean.class, boolean.class}, false, false);
                 assertEquals(View.VISIBLE, ((ScrollView) field(a, "scroll")).getVisibility());
                 assertSame("Native video texture must stay attached across fullscreen changes",
@@ -245,6 +255,9 @@ public class PlaybackIntegrationTest {
             });
             SystemClock.sleep(800);
             scenario.onActivity(a -> {
+                View inline = (View) field(a, "playerView"), host = (View) field(a, "videoHost");
+                assertEquals(host.getWidth(), inline.getWidth());
+                assertEquals(host.getHeight(), inline.getHeight());
                 assertTrue("Fullscreen return must continue producing video frames", player(a).isPlaying());
                 assertTrue("Fullscreen return must preserve the blue video image", bluePixels(a) > 1000);
                 assertTrue("Disabled external subtitle must disappear", whitePixels(a) < 15);
