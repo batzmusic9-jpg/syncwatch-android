@@ -34,7 +34,7 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
     private Media source;
     private ParcelFileDescriptor descriptor;
     private VLCVideoLayout surface;
-    private boolean ready, preparing, released, externalAttached;
+    private boolean ready, preparing, released, externalAttached, nativeStarted;
     private int generation;
     private long offset, seekSent = -1, seekSentAt;
     private Uri external;
@@ -57,6 +57,7 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
     private void attachNativeSurface() {
         nativePlayer.attachViews(surface, null, true, true);
         nativePlayer.setVideoScale(MediaPlayer.ScaleType.SURFACE_BEST_FIT);
+        nativePlayer.setVideoTrackEnabled(true);
     }
     @Override public void detachSurface() {
         if (nativePlayer != null && surface != null) nativePlayer.detachViews();
@@ -82,7 +83,7 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
     @Override public void open(Uri uri) throws IOException {
         if (released) throw new IOException("Player released");
         closeMedia();
-        ready = false; preparing = false; offset = 0; seekSent = -1;
+        ready = false; preparing = false; nativeStarted = false; offset = 0; seekSent = -1;
         external = null; externalLabel = null; externalAttached = false;
         internalSubtitles.clear(); externalNames.clear(); intent.reset(); metadata = "";
         try {
@@ -125,11 +126,13 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
     private void onNative(MediaPlayer.Event event) {
         switch (event.type) {
             case MediaPlayer.Event.Playing:
+                nativeStarted = true;
                 intent.observedPlaying(true);
                 makeReady();
                 if (!intent.wanted()) nativePlayer.pause();
                 break;
             case MediaPlayer.Event.Paused:
+                nativeStarted = true;
                 intent.observedPlaying(false);
                 makeReady();
                 if (intent.wanted()) nativePlayer.play();
@@ -169,7 +172,7 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
         if (ready && intent.pending() >= 0) applySeek();
     }
     private void makeReady() {
-        if (ready || nativePlayer.getLength() <= 0) return;
+        if (ready || !nativeStarted || nativePlayer.getLength() <= 0) return;
         ready = true;
         updateMetadata();
         for (Track track : subtitleTracks()) if (track.id >= 0) internalSubtitles.add(track.id);
@@ -217,7 +220,7 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
     @Override public boolean getPlayWhenReady() { return intent.wanted(); }
 
     private IMedia.Track trackMetadata(int id, int type) {
-        if (source == null) return null;
+        if (source == null || !nativeStarted) return null;
         for (int i = 0; i < source.getTrackCount(); i++) {
             IMedia.Track track = source.getTrack(i);
             if (track != null && track.id == id && track.type == type) return track;
@@ -270,10 +273,13 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
     }
     @Override public long getSubtitleOffset() { return offset; }
     public long nativeSubtitleDelay() { return nativePlayer == null ? 0 : nativePlayer.getSpuDelay(); }
+    public long nativeTime() { return nativePlayer == null ? -1 : nativePlayer.getTime(); }
     public IMedia.Stats diagnostics() { return source == null ? null : source.getStats(); }
     public String metadata() { return metadata; }
     private void updateMetadata() {
-        if (source == null) return;
+        // Media caches its first track snapshot. ESAdded may describe only the first stream;
+        // do not read it until Playing/Paused confirms initial stream discovery has finished.
+        if (source == null || !nativeStarted) return;
         StringBuilder info = new StringBuilder("durationMs=" + getDuration());
         for (int i = 0; i < source.getTrackCount(); i++) {
             IMedia.Track track = source.getTrack(i);
