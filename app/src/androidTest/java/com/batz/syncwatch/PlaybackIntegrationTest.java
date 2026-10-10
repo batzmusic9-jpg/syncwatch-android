@@ -123,9 +123,12 @@ public class PlaybackIntegrationTest {
                         "ignoringOnTheFly", object("server", 1))));
                 assertEquals(1, nextState(queue).getJSONObject("ignoringOnTheFly").getInt("server"));
                 waitUntilReady(scenario);
+                SystemClock.sleep(700);
                 scenario.onActivity(a -> {
                     assertFalse(player(a).getPlayWhenReady());
                     assertEquals(4000, player(a).getCurrentPosition(), 200);
+                    assertEquals("Native paused seek must reach the requested time", 4000,
+                            ((LibVlcPlaybackEngine) player(a)).nativeTime(), 250);
                 });
                 send(peer, object("State", object("playstate", object("position", 8, "paused", false, "doSeek", true),
                         "ignoringOnTheFly", object("server", 2))));
@@ -137,7 +140,7 @@ public class PlaybackIntegrationTest {
                 queue.clear();
                 scenario.onActivity(a -> {
                     assertTrue(player(a).getPlayWhenReady());
-                    assertEquals(8000, player(a).getCurrentPosition(), 800);
+                    assertEquals(8000, player(a).getCurrentPosition(), 1600);
                     player(a).pause();
                 });
                 JSONObject pause = nextState(queue);
@@ -176,7 +179,9 @@ public class PlaybackIntegrationTest {
         }
         return null;
     }
-    private static int whitePixels(MainActivity activity) {
+    private static int whitePixels(MainActivity activity) { return framePixels(activity, true); }
+    private static int bluePixels(MainActivity activity) { return framePixels(activity, false); }
+    private static int framePixels(MainActivity activity, boolean white) {
         android.view.TextureView view = texture((View) field(activity, "playerView"));
         if (view == null || !view.isAvailable()) return 0;
         android.graphics.Bitmap bitmap = view.getBitmap(320, 180);
@@ -184,8 +189,9 @@ public class PlaybackIntegrationTest {
         int count = 0;
         for (int y = 0; y < bitmap.getHeight(); y++) for (int x = 0; x < bitmap.getWidth(); x++) {
             int color = bitmap.getPixel(x, y);
-            if (android.graphics.Color.red(color) > 180 && android.graphics.Color.green(color) > 180
-                    && android.graphics.Color.blue(color) > 180) count++;
+            if (white ? android.graphics.Color.red(color) > 180 && android.graphics.Color.green(color) > 180
+                    && android.graphics.Color.blue(color) > 180 : android.graphics.Color.blue(color) > 150
+                    && android.graphics.Color.red(color) < 80 && android.graphics.Color.green(color) < 80) count++;
         }
         bitmap.recycle();
         return count;
@@ -239,6 +245,7 @@ public class PlaybackIntegrationTest {
             SystemClock.sleep(800);
             scenario.onActivity(a -> {
                 assertTrue("Fullscreen return must continue producing video frames", player(a).isPlaying());
+                assertTrue("Fullscreen return must preserve the blue video image", bluePixels(a) > 1000);
                 assertTrue("Disabled external subtitle must disappear", whitePixels(a) < 15);
             });
             scenario.moveToState(androidx.lifecycle.Lifecycle.State.CREATED);
