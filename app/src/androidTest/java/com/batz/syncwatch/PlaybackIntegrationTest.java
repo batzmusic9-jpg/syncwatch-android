@@ -391,9 +391,15 @@ public class PlaybackIntegrationTest {
                 SystemClock.sleep(100);
             }
             assertTrue("Fullscreen button must rotate into landscape", rotated.get());
+            // Configuration changes precede the compositor's completed rotation frame.
+            SystemClock.sleep(1000);
             scenario.onActivity(a -> {
                 PlaybackView view = (PlaybackView) field(a, "playerView");
                 view.showControls();
+                View window = (View) field(a, "screen");
+                assertEquals(window.getWidth(), view.getWidth());
+                assertEquals(window.getHeight(), view.getHeight());
+                assertEquals(View.GONE, ((ScrollView) field(a, "scroll")).getVisibility());
                 assertSame(originalPlayer.get(), player(a));
                 assertSame("Rotation must preserve the native texture", originalTexture.get(), texture(view));
                 int minimum = Math.round(48 * a.getResources().getDisplayMetrics().density);
