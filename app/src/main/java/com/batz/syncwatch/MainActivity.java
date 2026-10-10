@@ -8,7 +8,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.content.res.Configuration;
 import android.content.pm.ActivityInfo;
-import android.view.ViewGroup;
 
 import android.widget.FrameLayout;
 import androidx.appcompat.app.AlertDialog;
@@ -103,7 +102,12 @@ public final class MainActivity extends AppCompatActivity {
         videoHost = new FrameLayout(this);
         videoHost.setBackground(shape(Color.rgb(4, 7, 13), 20));
         videoHost.setClipToOutline(true);
-        videoHost.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
+        playerView.setBackground(shape(Color.rgb(4, 7, 13), 20));
+        playerView.setClipToOutline(true);
+        // Keep the native texture attached to one window throughout fullscreen transitions.
+        // The scrolling host reserves its portrait space; the player follows those bounds.
+        screen.addView(playerView, new FrameLayout.LayoutParams(0, 0));
+        screen.getViewTreeObserver().addOnPreDrawListener(() -> { updatePlayerBounds(); return true; });
         LinearLayout.LayoutParams videoParams = new LinearLayout.LayoutParams(-1, dp(210));
         videoParams.setMargins(0, dp(20), 0, dp(8));
         root.addView(videoHost, videoParams);
@@ -360,25 +364,35 @@ public final class MainActivity extends AppCompatActivity {
     private void setFullscreen(boolean value, boolean rotate) {
         if (fullscreen != value) {
             fullscreen = value;
-            playerView.detachSurface();
-            ((ViewGroup) playerView.getParent()).removeView(playerView);
-            if (value) {
-                scroll.setVisibility(View.GONE);
-                screen.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
-            } else {
-                screen.removeView(playerView);
-                scroll.setVisibility(View.VISIBLE);
-                videoHost.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
-            }
-            // Reattach the output without recreating the media or its logical playback state.
-            playerView.attachSurface();
+            scroll.setVisibility(value ? View.GONE : View.VISIBLE);
+            updatePlayerBounds();
         }
         playerView.setFullscreenButtonState(value);
+        playerView.setBackground(value ? new android.graphics.drawable.ColorDrawable(Color.BLACK)
+                : shape(Color.rgb(4, 7, 13), 20));
+        playerView.setClipToOutline(!value);
         WindowInsetsControllerCompat bars = WindowCompat.getInsetsController(getWindow(), screen);
         bars.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
         if (value) bars.hide(WindowInsetsCompat.Type.systemBars());
         else bars.show(WindowInsetsCompat.Type.systemBars());
         if (rotate) setRequestedOrientation(value ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+    }
+    private void updatePlayerBounds() {
+        int width = fullscreen ? screen.getWidth() : videoHost.getWidth();
+        int height = fullscreen ? screen.getHeight() : videoHost.getHeight();
+        int x = 0, y = 0;
+        if (!fullscreen) {
+            int[] host = new int[2], window = new int[2];
+            videoHost.getLocationInWindow(host);
+            screen.getLocationInWindow(window);
+            x = host[0] - window[0]; y = host[1] - window[1];
+        }
+        FrameLayout.LayoutParams bounds = (FrameLayout.LayoutParams) playerView.getLayoutParams();
+        if (bounds.width != width || bounds.height != height || bounds.leftMargin != x || bounds.topMargin != y) {
+            bounds.width = width; bounds.height = height;
+            bounds.leftMargin = x; bounds.topMargin = y;
+            playerView.setLayoutParams(bounds);
+        }
     }
     @Override public void onConfigurationChanged(Configuration configuration) {
         super.onConfigurationChanged(configuration);
