@@ -347,11 +347,15 @@ public class PlaybackIntegrationTest {
     private static void captureUi(String name) throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         SystemClock.sleep(250);
-        String command = "mkdir -p /sdcard/Download/syncwatch-ui && screencap -p /sdcard/Download/syncwatch-ui/" + name + ".png";
-        try (InputStream input = new android.os.ParcelFileDescriptor.AutoCloseInputStream(
-                InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command))) {
-            byte[] buffer = new byte[1024];
-            while (input.read(buffer) != -1) { /* Wait for the shell capture to finish. */ }
+        // UiAutomation executes a process directly; shell operators are not interpreted.
+        String[] commands = {"mkdir -p /sdcard/Download/syncwatch-ui",
+                "screencap -p /sdcard/Download/syncwatch-ui/" + name + ".png"};
+        for (String command : commands) {
+            try (InputStream input = new android.os.ParcelFileDescriptor.AutoCloseInputStream(
+                    InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command))) {
+                byte[] buffer = new byte[1024];
+                while (input.read(buffer) != -1) { /* Wait for the process to finish. */ }
+            }
         }
     }
 
