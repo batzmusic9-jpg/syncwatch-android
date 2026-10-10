@@ -75,7 +75,7 @@ jobs:
           cp app/build/outputs/apk/debug/app-debug.apk dist/SyncWatch-1.2.0.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/SyncWatch-1.2.0.apk
           cd dist
-          sha256sum SyncWatch-1.2.0.apk > SHA256SUMS.txt
+          sha256sum SyncWatch-1.2.0.apk | tee SHA256SUMS.txt
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
