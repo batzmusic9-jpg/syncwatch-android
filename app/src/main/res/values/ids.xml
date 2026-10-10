@@ -1,0 +1,10 @@
+<resources>
+    <item type="id" name="player_controls" />
+    <item type="id" name="player_play_pause" />
+    <item type="id" name="player_rewind" />
+    <item type="id" name="player_forward" />
+    <item type="id" name="player_seek" />
+    <item type="id" name="player_audio" />
+    <item type="id" name="player_subtitles" />
+    <item type="id" name="player_fullscreen" />
+</resources>
