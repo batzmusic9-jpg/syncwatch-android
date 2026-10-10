@@ -7,7 +7,12 @@ import base64
 import hashlib
 from pathlib import Path
 
-for image in sorted(Path('app/build/reports/ui').glob('*.png')):
+root = Path('app/build/reports/ui')
+for required in ('portrait.png', 'fullscreen-visible.png', 'fullscreen-hidden.png'):
+    if not (root / required).is_file():
+        raise SystemExit(f'Missing required emulator screenshot: {required}')
+
+for image in sorted(root.glob('*.png')):
     data = image.read_bytes()
     encoded = base64.b64encode(data).decode('ascii')
     chunks = [encoded[start:start + 3000] for start in range(0, len(encoded), 3000)]
