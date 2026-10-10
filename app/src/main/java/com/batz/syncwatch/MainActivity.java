@@ -16,12 +16,10 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
-import androidx.media3.common.MimeTypes;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collections;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,32 +36,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.media3.common.C;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.PlaybackException;
-import androidx.media3.common.Player;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.ui.PlayerView;
 import org.json.JSONObject;
 import java.util.UUID;
 
-@UnstableApi
 public final class MainActivity extends AppCompatActivity {
     private static final int PICK_VIDEO = 10, PICK_SUBTITLE = 11;
     private String connectHost = "syncplay.pl";
     private int connectPort = 8997;
     private boolean requireSecure = true;
-    private boolean fullscreen;
+    private boolean fullscreen, playerSurfaceDetached;
     private FrameLayout screen, videoHost;
     private ScrollView scroll;
     private Button subtitleButton;
-    private String subtitleSource, subtitleMime, subtitleName;
+    private String subtitleSource, subtitleExtension, subtitleName;
     private long subtitleOffset;
     private int subtitleRevision;
 
     private final Handler main = new Handler(Looper.getMainLooper());
-    private ExoPlayer player;
+    private PlaybackEngine player;
+    private Uri videoUri;
     private SyncProtocol protocol;
     private SyncConnection connection;
     private int generation;
@@ -77,7 +68,7 @@ public final class MainActivity extends AppCompatActivity {
     private long fileSize;
     private boolean loaded;
     private LinearLayout root;
-    private PlayerView playerView;
+    private PlaybackView playerView;
 
     @Override public void onCreate(Bundle saved) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -106,16 +97,9 @@ public final class MainActivity extends AppCompatActivity {
         TextView title = text("Cinema em companhia.", 24);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         text("Escolha seu vídeo e encontrem-se na mesma sala.", 14);
-        player = new ExoPlayer.Builder(this).build();
-        playerView = new PlayerView(this);
-        playerView.setPlayer(player);
-        playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING);
-        playerView.setKeepScreenOn(true);
-        playerView.setControllerShowTimeoutMs(2500);
-        playerView.setShowNextButton(false);
-        playerView.setShowPreviousButton(false);
-        playerView.setShowSubtitleButton(true);
-        playerView.setFullscreenButtonClickListener(value -> setFullscreen(value, true));
+        player = new LibVlcPlaybackEngine(this);
+        playerView = new PlaybackView(this, player, this::audioMenu, this::subtitleMenu,
+                () -> setFullscreen(!fullscreen, true));
         videoHost = new FrameLayout(this);
         videoHost.setBackground(shape(Color.rgb(4, 7, 13), 20));
         videoHost.setClipToOutline(true);
@@ -124,7 +108,7 @@ public final class MainActivity extends AppCompatActivity {
         videoParams.setMargins(0, dp(20), 0, dp(8));
         root.addView(videoHost, videoParams);
         media = text("Seu vídeo aparecerá aqui", 13);
-        button("Escolher vídeo", view -> pick("video/*", PICK_VIDEO), true);
+        button("Escolher vídeo", view -> pick("*/*", PICK_VIDEO), true);
         subtitleButton = button("Adicionar legenda", view -> subtitleMenu(), false);
         Button fullscreenButton = button("Tela cheia", view -> setFullscreen(true, true), false);
         root.removeView(subtitleButton);
@@ -171,34 +155,22 @@ public final class MainActivity extends AppCompatActivity {
                 else { setEnabled(false); getOnBackPressedDispatcher().onBackPressed(); setEnabled(true); }
             }
         });
-        player.addListener(new Player.Listener() {
-            @Override public void onPlayWhenReadyChanged(boolean value, int reason) {
+        player.setListener(new PlaybackEngine.Listener() {
+            @Override public void onCommand(boolean seek) {
                 updateLocal();
-                if (!applyingRemote && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST && protocol != null)
-                    protocol.change(false);
+                if (!applyingRemote && protocol != null) protocol.change(seek);
             }
-            @Override public void onPositionDiscontinuity(Player.PositionInfo oldPosition,
-                                                         Player.PositionInfo newPosition, int reason) {
+            @Override public void onReady() { updateLocal(); announceFile(); }
+            @Override public void onEnded() {
+                player.pause();
                 updateLocal();
-                if (!applyingRemote && reason == Player.DISCONTINUITY_REASON_SEEK && protocol != null)
-                    protocol.change(true);
             }
-            @Override public void onPlaybackStateChanged(int state) {
-                updateLocal();
-                if (state == Player.STATE_READY) announceFile();
-                if (state == Player.STATE_ENDED && protocol != null) {
-                    player.pause();
-                    updateLocal();
-                    protocol.change(false);
-                }
-            }
-            @Override public void onPlayerError(PlaybackException error) {
+            @Override public void onError(String details) {
                 loaded = false;
                 ready.setChecked(false);
                 ready.setEnabled(false);
                 updateLocal();
-                media.setText("Não foi possível abrir o vídeo: " + error.getErrorCodeName()
-                        + "\nEscolha outro arquivo. Formatos dependem dos codecs do aparelho.");
+                media.setText("Não foi possível reproduzir este vídeo. Escolha o arquivo novamente ou tente outro vídeo.");
             }
         });
         if (saved != null && saved.containsKey("video")) {
@@ -240,7 +212,7 @@ public final class MainActivity extends AppCompatActivity {
                 if (token != generation || !loaded) return;
                 long target = SyncPolicy.targetMillis(seconds, paused, latency);
                 long duration = player.getDuration();
-                if (duration != C.TIME_UNSET && duration > 0) target = Math.min(target, duration);
+                if (duration > 0) target = Math.min(target, duration);
                 applyingRemote = true;
                 try {
                     if (SyncPolicy.shouldSeek(player.getCurrentPosition(), target, seek, firstState)) player.seekTo(target);
@@ -276,7 +248,7 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     private void announceFile() {
-        if (loaded && protocol != null && player.getDuration() != C.TIME_UNSET)
+        if (loaded && protocol != null && player.getDuration() > 0)
             protocol.file(filename, fileSize, player.getDuration() / 1000.0);
     }
 
@@ -310,7 +282,9 @@ public final class MainActivity extends AppCompatActivity {
             applyingRemote = true;
             player.pause();
             clearSubtitle();
-            player.setMediaItem(MediaItem.fromUri(uri), Math.max(0, position));
+            player.open(uri);
+            videoUri = uri;
+            player.seekTo(Math.max(0, position));
             loaded = true;
             firstState = true;
             player.prepare();
@@ -345,8 +319,8 @@ public final class MainActivity extends AppCompatActivity {
 
     @Override protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
-        if (loaded && player.getCurrentMediaItem() != null && player.getCurrentMediaItem().localConfiguration != null) {
-            state.putString("video", player.getCurrentMediaItem().localConfiguration.uri.toString());
+        if (loaded && videoUri != null) {
+            state.putString("video", videoUri.toString());
             state.putLong("position", player.getCurrentPosition());
         }
     }
@@ -363,7 +337,7 @@ public final class MainActivity extends AppCompatActivity {
     @Override protected void onDestroy() {
         ++generation;
         if (connection != null) connection.close();
-        if (playerView != null) playerView.setPlayer(null);
+        if (playerView != null) playerView.detachSurface();
         if (player != null) player.release();
         main.removeCallbacksAndMessages(null);
         super.onDestroy();
@@ -386,6 +360,8 @@ public final class MainActivity extends AppCompatActivity {
     private void setFullscreen(boolean value, boolean rotate) {
         if (fullscreen != value) {
             fullscreen = value;
+            playerView.detachSurface();
+            playerSurfaceDetached = true;
             ((ViewGroup) playerView.getParent()).removeView(playerView);
             if (value) {
                 scroll.setVisibility(View.GONE);
@@ -395,6 +371,10 @@ public final class MainActivity extends AppCompatActivity {
                 scroll.setVisibility(View.VISIBLE);
                 videoHost.addView(playerView, new FrameLayout.LayoutParams(-1, -1));
             }
+        }
+        if (playerView.getChildAt(0) instanceof ViewGroup && fullscreen == value) {
+            // Attach after reparenting, never recreate the media or its logical playback state.
+            if (playerSurfaceDetached) { playerView.attachSurface(); playerSurfaceDetached = false; }
         }
         playerView.setFullscreenButtonState(value);
         WindowInsetsControllerCompat bars = WindowCompat.getInsetsController(getWindow(), screen);
@@ -407,16 +387,40 @@ public final class MainActivity extends AppCompatActivity {
         super.onConfigurationChanged(configuration);
         setFullscreen(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE, false);
     }
+    private void audioMenu() {
+        if (!loaded) { toast("Escolha o vídeo primeiro"); return; }
+        java.util.List<PlaybackEngine.Track> tracks = player.audioTracks();
+        if (tracks.isEmpty()) { toast("Aguarde o vídeo abrir para escolher o áudio"); return; }
+        String[] labels = new String[tracks.size()];
+        int selected = -1;
+        for (int i = 0; i < tracks.size(); i++) {
+            labels[i] = tracks.get(i).label;
+            if (tracks.get(i).id == player.selectedAudio()) selected = i;
+        }
+        new AlertDialog.Builder(this).setTitle("Áudio").setSingleChoiceItems(labels, selected, (dialog, which) -> {
+            if (!player.selectAudio(tracks.get(which).id)) toast("Não foi possível selecionar este áudio");
+            dialog.dismiss();
+        }).setNegativeButton("Fechar", null).show();
+    }
     private void subtitleMenu() {
         if (!loaded) { toast("Escolha o vídeo primeiro"); return; }
-        if (subtitleSource == null) { pick("*/*", PICK_SUBTITLE); return; }
-        new AlertDialog.Builder(this).setTitle("Legenda · " + subtitleName)
-                .setItems(new String[]{"Escolher outra legenda", "Ajustar tempo (" + subtitleOffset + " ms)", "Remover legenda"},
-                        (dialog, which) -> {
-                            if (which == 0) pick("*/*", PICK_SUBTITLE);
-                            else if (which == 1) subtitleTiming();
-                            else { clearSubtitle(); refreshSubtitles(); }
-                        }).show();
+        java.util.List<PlaybackEngine.Track> tracks = player.subtitleTracks();
+        String[] labels = new String[tracks.size() + 3];
+        labels[0] = "Nenhuma legenda";
+        int selected = player.selectedSubtitle() < 0 ? 0 : -1;
+        for (int i = 0; i < tracks.size(); i++) {
+            labels[i + 1] = tracks.get(i).label;
+            if (tracks.get(i).id == player.selectedSubtitle()) selected = i + 1;
+        }
+        labels[labels.length - 2] = "Adicionar legenda externa (.srt / .vtt)";
+        labels[labels.length - 1] = "Ajustar tempo (" + subtitleOffset + " ms)";
+        new AlertDialog.Builder(this).setTitle("Legendas").setSingleChoiceItems(labels, selected, (dialog, which) -> {
+            dialog.dismiss();
+            if (which == 0) player.selectSubtitle(-1);
+            else if (which == labels.length - 2) pick("*/*", PICK_SUBTITLE);
+            else if (which == labels.length - 1) subtitleTiming();
+            else if (!player.selectSubtitle(tracks.get(which - 1).id)) toast("Não foi possível selecionar esta legenda");
+        }).setNegativeButton("Fechar", null).show();
     }
     private void subtitleTiming() {
         EditText input = new EditText(this);
@@ -463,39 +467,26 @@ public final class MainActivity extends AppCompatActivity {
             String source = new String(bytes, StandardCharsets.UTF_8).replace("\uFEFF", "");
             if (!source.contains("-->")) { toast("O arquivo não contém tempos de legenda válidos"); return; }
             subtitleName = label;
-            subtitleMime = extension.endsWith(".srt") ? MimeTypes.APPLICATION_SUBRIP : MimeTypes.TEXT_VTT;
+            subtitleExtension = extension.endsWith(".srt") ? "srt" : "vtt";
             subtitleSource = source;
             subtitleOffset = 0;
+            File next = new File(getCacheDir(), "subtitle-" + (++subtitleRevision) + "." + subtitleExtension);
+            Files.write(next.toPath(), subtitleSource.getBytes(StandardCharsets.UTF_8));
+            player.addSubtitle(Uri.fromFile(next), subtitleName);
             refreshSubtitles();
         } catch (Exception error) { toast("Não foi possível ler a legenda. Escolha outro arquivo."); }
     }
     private void clearSubtitle() {
         subtitleSource = null;
         subtitleOffset = 0;
+        if (player != null) { player.selectSubtitle(-1); player.setSubtitleOffset(0); }
         subtitleButton.setText("Adicionar legenda");
     }
     private void refreshSubtitles() {
-        MediaItem current = player.getCurrentMediaItem();
-        if (current == null || current.localConfiguration == null) return;
         try {
-            MediaItem.Builder item = current.buildUpon().setSubtitleConfigurations(Collections.emptyList());
-            if (subtitleSource != null) {
-                File next = new File(getCacheDir(), "subtitle-" + (++subtitleRevision) + "." + (MimeTypes.TEXT_VTT.equals(subtitleMime) ? "vtt" : "srt"));
-                Files.write(next.toPath(), SubtitleTiming.shift(subtitleSource, subtitleOffset).getBytes(StandardCharsets.UTF_8));
-                item.setSubtitleConfigurations(Collections.singletonList(new MediaItem.SubtitleConfiguration.Builder(Uri.fromFile(next))
-                        .setMimeType(subtitleMime).setLabel(subtitleName).setSelectionFlags(C.SELECTION_FLAG_DEFAULT).build()));
-
-            }
-            long position = player.getCurrentPosition();
-            boolean playing = player.getPlayWhenReady();
-            applyingRemote = true;
-            try {
-                player.setMediaItem(item.build(), position);
-                player.prepare();
-                player.setPlayWhenReady(playing);
-            } finally { applyingRemote = false; }
-            if (subtitleSource != null) subtitleButton.setText("Legenda · " + subtitleOffset + " ms");
-        } catch (Exception error) { toast("Não foi possível aplicar a legenda"); }
+            player.setSubtitleOffset(subtitleOffset);
+            subtitleButton.setText(subtitleSource == null ? "Legendas" : "Legenda · " + subtitleOffset + " ms");
+        } catch (Exception error) { toast("Não foi possível aplicar o ajuste da legenda"); }
     }
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
     private void toast(String value) { Toast.makeText(this, value, Toast.LENGTH_LONG).show(); }
