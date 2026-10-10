@@ -4,12 +4,8 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.widget.Button;
 import android.widget.EditText;
-import androidx.media3.common.Player;
-import androidx.media3.common.text.CueGroup;
 import android.view.View;
 import android.widget.ScrollView;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.exoplayer.ExoPlayer;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -31,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.batz.syncwatch.SyncProtocol.object;
 import static org.junit.Assert.*;
 
-@UnstableApi
 @RunWith(AndroidJUnit4.class)
 public class PlaybackIntegrationTest {
     private static void setField(MainActivity activity, String name, Object value) {
@@ -46,7 +41,7 @@ public class PlaybackIntegrationTest {
         try { Field f = MainActivity.class.getDeclaredField(name); f.setAccessible(true); return f.get(activity); }
         catch (Exception e) { throw new AssertionError(e); }
     }
-    private static ExoPlayer player(MainActivity activity) { return (ExoPlayer) field(activity, "player"); }
+    private static PlaybackEngine player(MainActivity activity) { return (PlaybackEngine) field(activity, "player"); }
     private static void send(Socket peer, JSONObject value) throws Exception {
         peer.getOutputStream().write((value + "\r\n").getBytes(StandardCharsets.UTF_8));
         peer.getOutputStream().flush();
@@ -61,8 +56,8 @@ public class PlaybackIntegrationTest {
     }
     private static void waitUntilReady(ActivityScenario<MainActivity> scenario) {
         AtomicBoolean ready = new AtomicBoolean();
-        for (int i = 0; i < 80; i++) {
-            scenario.onActivity(a -> ready.set(player(a).getPlaybackState() == Player.STATE_READY));
+        for (int i = 0; i < 200; i++) {
+            scenario.onActivity(a -> ready.set(player(a).isReady()));
             if (ready.get()) return;
             SystemClock.sleep(100);
         }
@@ -128,16 +123,24 @@ public class PlaybackIntegrationTest {
                         "ignoringOnTheFly", object("server", 1))));
                 assertEquals(1, nextState(queue).getJSONObject("ignoringOnTheFly").getInt("server"));
                 waitUntilReady(scenario);
+                SystemClock.sleep(700);
                 scenario.onActivity(a -> {
                     assertFalse(player(a).getPlayWhenReady());
                     assertEquals(4000, player(a).getCurrentPosition(), 200);
+                    assertEquals("Native paused seek must reach the requested time", 4000,
+                            ((LibVlcPlaybackEngine) player(a)).nativeTime(), 250);
                 });
                 send(peer, object("State", object("playstate", object("position", 8, "paused", false, "doSeek", true),
                         "ignoringOnTheFly", object("server", 2))));
                 assertEquals(2, nextState(queue).getJSONObject("ignoringOnTheFly").getInt("server"));
+                // Native callbacks arrive after the remote guard has been cleared. They must not echo commands.
+                SystemClock.sleep(800);
+                for (JSONObject value : queue) if (value.has("State"))
+                    assertFalse("Remote operation echoed a local command", value.getJSONObject("State").has("ignoringOnTheFly"));
+                queue.clear();
                 scenario.onActivity(a -> {
                     assertTrue(player(a).getPlayWhenReady());
-                    assertEquals(8000, player(a).getCurrentPosition(), 800);
+                    assertEquals(8000, player(a).getCurrentPosition(), 1600);
                     player(a).pause();
                 });
                 JSONObject pause = nextState(queue);
@@ -156,56 +159,188 @@ public class PlaybackIntegrationTest {
         }
     }
 
-    @Test public void externalSubtitlesRenderAndFullscreenKeepsPlayer() throws Exception {
-        File video = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir(), "subtitle-video.mp4");
-        try (InputStream input = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open("sync-test.mp4");
-             FileOutputStream output = new FileOutputStream(video)) {
+    private static File fixture(String asset) throws Exception {
+        File file = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir(), asset);
+        try (InputStream input = InstrumentationRegistry.getInstrumentation().getContext().getAssets().open(asset);
+             FileOutputStream output = new FileOutputStream(file)) {
             byte[] bytes = new byte[8192]; int count;
             while ((count = input.read(bytes)) != -1) output.write(bytes, 0, count);
         }
+        return file;
+    }
+    private static android.view.TextureView texture(View view) {
+        if (view instanceof android.view.TextureView) return (android.view.TextureView) view;
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                android.view.TextureView found = texture(group.getChildAt(i));
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+    private static int whitePixels(MainActivity activity) { return framePixels(activity, true); }
+    private static int bluePixels(MainActivity activity) { return framePixels(activity, false); }
+    private static int framePixels(MainActivity activity, boolean white) {
+        android.view.TextureView view = texture((View) field(activity, "playerView"));
+        if (view == null || !view.isAvailable()) return 0;
+        android.graphics.Bitmap bitmap = view.getBitmap(320, 180);
+        if (bitmap == null) return 0;
+        int count = 0;
+        for (int y = 0; y < bitmap.getHeight(); y++) for (int x = 0; x < bitmap.getWidth(); x++) {
+            int color = bitmap.getPixel(x, y);
+            if (white ? android.graphics.Color.red(color) > 180 && android.graphics.Color.green(color) > 180
+                    && android.graphics.Color.blue(color) > 180 : android.graphics.Color.blue(color) > 150
+                    && android.graphics.Color.red(color) < 80 && android.graphics.Color.green(color) < 80) count++;
+        }
+        bitmap.recycle();
+        return count;
+    }
+    @Test public void externalSubtitlesRenderAndFullscreenKeepsPlayer() throws Exception {
+        File video = fixture("sync-test.mp4");
         File subtitle = new File(video.getParentFile(), "test.srt");
         try (FileOutputStream output = new FileOutputStream(subtitle)) {
             output.write("1\n00:00:00,000 --> 00:00:18,000\nLegenda de teste\n".getBytes(StandardCharsets.UTF_8));
         }
-        AtomicBoolean visibleCue = new AtomicBoolean();
+        AtomicBoolean rendered = new AtomicBoolean();
         try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
             scenario.onActivity(a -> invoke(a, "openVideo", new Class<?>[]{Uri.class, long.class}, Uri.fromFile(video), 0L));
             waitUntilReady(scenario);
             scenario.onActivity(a -> {
-                player(a).addListener(new Player.Listener() {
-                    @Override public void onCues(CueGroup group) {
-                        for (androidx.media3.common.text.Cue cue : group.cues)
-                            if (cue.text != null && cue.text.toString().contains("Legenda de teste")) visibleCue.set(true);
-                    }
-                });
-                invoke(a, "loadSubtitle", new Class<?>[]{Uri.class}, Uri.fromFile(subtitle));
+                player(a).selectSubtitle(-1);
+                player(a).play();
             });
-            waitUntilReady(scenario);
-            scenario.onActivity(a -> { player(a).seekTo(4000); player(a).play(); });
-            for (int i = 0; i < 80 && !visibleCue.get(); i++) SystemClock.sleep(100);
-            assertTrue("External subtitle must produce a rendered cue", visibleCue.get());
+            SystemClock.sleep(800);
+            scenario.onActivity(a -> assertTrue("Fixture must have a plain blue frame", whitePixels(a) < 15));
+            scenario.onActivity(a -> invoke(a, "loadSubtitle", new Class<?>[]{Uri.class}, Uri.fromFile(subtitle)));
+            for (int i = 0; i < 100 && !rendered.get(); i++) {
+                scenario.onActivity(a -> rendered.set(player(a).selectedSubtitle() >= 0 && whitePixels(a) > 30));
+                SystemClock.sleep(100);
+            }
+            assertTrue("LibVLC external subtitle must render white text into the video texture", rendered.get());
             scenario.onActivity(a -> {
                 player(a).pause();
-                ExoPlayer before = player(a);
+                PlaybackEngine before = player(a);
                 long position = before.getCurrentPosition();
                 invoke(a, "setFullscreen", new Class<?>[]{boolean.class, boolean.class}, true, false);
                 assertEquals(View.GONE, ((ScrollView) field(a, "scroll")).getVisibility());
                 assertSame(field(a, "screen"), ((View) field(a, "playerView")).getParent());
                 assertSame(before, player(a));
                 assertEquals(position, player(a).getCurrentPosition(), 100);
+                player(a).play();
+            });
+            SystemClock.sleep(800);
+            scenario.onActivity(a -> {
+                View full = (View) field(a, "playerView"), window = (View) field(a, "screen");
+                assertEquals(window.getWidth(), full.getWidth());
+                assertEquals(window.getHeight(), full.getHeight());
+                assertTrue("Fullscreen must display the actual blue video", bluePixels(a) > 1000);
+                player(a).pause();
+                long position = player(a).getCurrentPosition();
                 invoke(a, "setFullscreen", new Class<?>[]{boolean.class, boolean.class}, false, false);
                 assertEquals(View.VISIBLE, ((ScrollView) field(a, "scroll")).getVisibility());
-                assertSame(field(a, "videoHost"), ((View) field(a, "playerView")).getParent());
+                assertSame("Native video texture must stay attached across fullscreen changes",
+                        field(a, "screen"), ((View) field(a, "playerView")).getParent());
                 setField(a, "subtitleOffset", 500L);
                 invoke(a, "refreshSubtitles", new Class<?>[]{});
+                assertEquals(500000, ((LibVlcPlaybackEngine) player(a)).nativeSubtitleDelay());
                 assertEquals(position, player(a).getCurrentPosition(), 100);
+                setField(a, "subtitleOffset", -500L);
+                invoke(a, "refreshSubtitles", new Class<?>[]{});
+                assertEquals(-500000, ((LibVlcPlaybackEngine) player(a)).nativeSubtitleDelay());
+                assertEquals(position, player(a).getCurrentPosition(), 100);
+                invoke(a, "clearSubtitle", new Class<?>[]{});
+                assertEquals(-1, player(a).selectedSubtitle());
+                player(a).play();
             });
+            SystemClock.sleep(800);
+            scenario.onActivity(a -> {
+                View inline = (View) field(a, "playerView"), host = (View) field(a, "videoHost");
+                assertEquals(host.getWidth(), inline.getWidth());
+                assertEquals(host.getHeight(), inline.getHeight());
+                assertTrue("Fullscreen return must continue producing video frames", player(a).isPlaying());
+                assertTrue("Fullscreen return must preserve the blue video image", bluePixels(a) > 1000);
+                assertTrue("Disabled external subtitle must disappear", whitePixels(a) < 15);
+            });
+            scenario.moveToState(androidx.lifecycle.Lifecycle.State.CREATED);
+            scenario.onActivity(a -> assertFalse("onStop must pause playback", player(a).getPlayWhenReady()));
+        }
+    }
+    @Test public void matroskaHevcAc3DecodesAndSelectsTracks() throws Exception {
+        File video = fixture("codec-test.mkv");
+        AtomicBoolean decoded = new AtomicBoolean();
+        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(a -> invoke(a, "openVideo", new Class<?>[]{Uri.class, long.class}, Uri.fromFile(video), 0L));
+            waitUntilReady(scenario);
+            scenario.onActivity(a -> player(a).play());
+            for (int i = 0; i < 200 && !decoded.get(); i++) {
+                scenario.onActivity(a -> {
+                    org.videolan.libvlc.interfaces.IMedia.Stats stats = ((LibVlcPlaybackEngine) player(a)).diagnostics();
+                    decoded.set(stats != null && stats.decodedVideo > 0 && stats.displayedPictures > 0
+                            && stats.decodedAudio > 0 && stats.playedAbuffers > 0);
+                });
+                SystemClock.sleep(100);
+            }
+            assertTrue("Synthetic HEVC/AC3 must decode actual video and audio buffers", decoded.get());
+            scenario.onActivity(a -> {
+                String metadata = ((LibVlcPlaybackEngine) player(a)).metadata();
+                assertTrue(metadata, metadata.contains("1920x804"));
+                assertTrue(metadata, metadata.contains("channels=6"));
+                assertTrue(metadata, metadata.contains("sampleRate=48000"));
+                java.util.List<PlaybackEngine.Track> audio = player(a).audioTracks();
+                java.util.List<PlaybackEngine.Track> subtitles = player(a).subtitleTracks();
+                assertEquals(2, audio.size());
+                assertEquals(2, subtitles.size());
+                assertTrue(player(a).selectAudio(audio.get(1).id));
+                assertTrue(player(a).selectSubtitle(subtitles.get(1).id));
+            });
+            SystemClock.sleep(500);
+            scenario.onActivity(a -> {
+                assertEquals(player(a).audioTracks().get(1).id, player(a).selectedAudio());
+                assertEquals(player(a).subtitleTracks().get(1).id, player(a).selectedSubtitle());
+                player(a).pause();
+                long position = player(a).getCurrentPosition();
+                player(a).setSubtitleOffset(500);
+                assertEquals(500000, ((LibVlcPlaybackEngine) player(a)).nativeSubtitleDelay());
+                player(a).setSubtitleOffset(-500);
+                assertEquals(-500000, ((LibVlcPlaybackEngine) player(a)).nativeSubtitleDelay());
+                assertEquals(position, player(a).getCurrentPosition(), 200);
+                assertTrue(player(a).selectSubtitle(-1));
+                player(a).seekTo(12000);
+                player(a).play();
+            });
+            SystemClock.sleep(800);
+            scenario.onActivity(a -> {
+                assertEquals(12000, player(a).getCurrentPosition(), 1800);
+                player(a).pause();
+                assertFalse(player(a).getPlayWhenReady());
+            });
+        }
+    }
+
+    @Test public void externalVttRendersAndDoesNotReplaceMedia() throws Exception {
+        File video = fixture("sync-test.mp4");
+        File subtitle = new File(video.getParentFile(), "test.vtt");
+        try (FileOutputStream output = new FileOutputStream(subtitle)) {
+            output.write("WEBVTT\n\n00:00:00.000 --> 00:00:18.000\nVTT subtitle test\n".getBytes(StandardCharsets.UTF_8));
+        }
+        AtomicBoolean rendered = new AtomicBoolean();
+        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(a -> invoke(a, "openVideo", new Class<?>[]{Uri.class, long.class}, Uri.fromFile(video), 4000L));
             waitUntilReady(scenario);
             scenario.onActivity(a -> {
-                invoke(a, "clearSubtitle", new Class<?>[]{});
-                invoke(a, "refreshSubtitles", new Class<?>[]{});
-                assertTrue(player(a).getCurrentMediaItem().localConfiguration.subtitleConfigurations.isEmpty());
+                long duration = player(a).getDuration();
+                long position = player(a).getCurrentPosition();
+                invoke(a, "loadSubtitle", new Class<?>[]{Uri.class}, Uri.fromFile(subtitle));
+                assertEquals(duration, player(a).getDuration());
+                assertEquals(position, player(a).getCurrentPosition(), 100);
+                player(a).play();
             });
+            for (int i = 0; i < 100 && !rendered.get(); i++) {
+                scenario.onActivity(a -> rendered.set(player(a).selectedSubtitle() >= 0 && whitePixels(a) > 30));
+                SystemClock.sleep(100);
+            }
+            assertTrue("LibVLC must render the external VTT text", rendered.get());
         }
     }
 }

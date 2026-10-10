@@ -2,6 +2,8 @@ name: Android APK
 
 on:
   push:
+    branches: [main, playback-v1.2]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -29,15 +31,19 @@ jobs:
         with:
           gradle-version: '8.11.1'
       - name: Install Android SDK
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - name: Test, lint and build installable APK
         run: gradle --no-daemon testDebugUnitTest lintDebug assembleDebug
-      - name: Create synthetic playback fixture
+      - name: Create synthetic MP4 and MKV HEVC AC3 fixtures
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y ffmpeg
           mkdir -p app/src/androidTest/assets
-          ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc=size=160x90:rate=15 -f lavfi -i sine=frequency=440:sample_rate=44100 -t 20 -c:v libx264 -pix_fmt yuv420p -c:a aac app/src/androidTest/assets/sync-test.mp4
+          ffmpeg -hide_banner -loglevel error -f lavfi -i color=c=blue:size=320x180:rate=15 -f lavfi -i sine=frequency=440:sample_rate=44100 -t 20 -c:v libx264 -pix_fmt yuv420p -c:a aac app/src/androidTest/assets/sync-test.mp4
+          printf '1\n00:00:00,000 --> 00:00:18,000\nInternal English subtitle\n' > /tmp/en.srt
+          printf '1\n00:00:00,000 --> 00:00:18,000\nLegenda interna em portugues\n' > /tmp/pt.srt
+          ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=size=1920x804:rate=24000/1001 -f lavfi -i 'aevalsrc=sin(2*PI*440*t)|sin(2*PI*440*t)|sin(2*PI*440*t)|sin(2*PI*80*t)|sin(2*PI*440*t)|sin(2*PI*440*t):s=48000:c=5.1' -f lavfi -i sine=frequency=880:sample_rate=48000 -i /tmp/en.srt -i /tmp/pt.srt -map 0:v -map 1:a -map 2:a -map 3:s -map 4:s -t 20 -c:v libx265 -preset ultrafast -crf 34 -x265-params pools=2:frame-threads=2 -pix_fmt yuv420p -c:a:0 ac3 -b:a:0 384k -c:a:1 aac -ac:a:1 2 -c:s srt -metadata:s:a:0 language=eng -metadata:s:a:1 language=por -metadata:s:s:0 language=eng -metadata:s:s:1 language=por app/src/androidTest/assets/codec-test.mkv
+          ffprobe -v quiet -show_format -show_streams app/src/androidTest/assets/codec-test.mkv > app/build/reports/codec-fixture.txt
       - name: Enable emulator acceleration
         run: |
           sudo chown "$USER" /dev/kvm
@@ -45,11 +51,14 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
+          target: google_apis
           arch: x86_64
           profile: pixel_2
           disable-animations: true
           script: |
-            gradle --no-daemon connectedDebugAndroidTest
+            adb logcat -c
+            gradle --no-daemon connectedDebugAndroidTest || { adb logcat -d > app/build/reports/native-logcat.txt; exit 1; }
+            adb logcat -d > app/build/reports/native-logcat.txt
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -n com.batz.syncwatch/.MainActivity
             sleep 2
@@ -63,10 +72,10 @@ jobs:
       - name: Verify and package APK
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/SyncWatch-1.1.0.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/SyncWatch-1.1.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/SyncWatch-1.2.0.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/SyncWatch-1.2.0.apk
           cd dist
-          sha256sum SyncWatch-1.1.0.apk > SHA256SUMS.txt
+          sha256sum SyncWatch-1.2.0.apk | tee SHA256SUMS.txt
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
