@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'com.batz.syncwatch'
-    compileSdk 35
+    compileSdk 36
     defaultConfig {
         applicationId 'com.batz.syncwatch'
         minSdk 26
