@@ -343,4 +343,110 @@ public class PlaybackIntegrationTest {
             assertTrue("LibVLC must render the external VTT text", rendered.get());
         }
     }
+
+    private static void captureUi(String name) throws Exception {
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        SystemClock.sleep(250);
+        // UiAutomation executes a process directly; shell operators are not interpreted.
+        String[] commands = {"mkdir -p /sdcard/Download/syncwatch-ui",
+                "screencap -p /sdcard/Download/syncwatch-ui/" + name + ".png"};
+        for (String command : commands) {
+            try (InputStream input = new android.os.ParcelFileDescriptor.AutoCloseInputStream(
+                    InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command))) {
+                byte[] buffer = new byte[1024];
+                while (input.read(buffer) != -1) { /* Wait for the process to finish. */ }
+            }
+        }
+    }
+
+    @Test public void cinematicOverlayRotatesAndAutoHidesWithAccessibleControls() throws Exception {
+        File video = fixture("sync-test.mp4");
+        AtomicReference<PlaybackEngine> originalPlayer = new AtomicReference<>();
+        AtomicReference<android.view.TextureView> originalTexture = new AtomicReference<>();
+        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(a -> {
+                ((EditText) field(a, "name")).setText("Alex");
+                ((EditText) field(a, "room")).setText("Movie night");
+                invoke(a, "openVideo", new Class<?>[]{Uri.class, long.class}, Uri.fromFile(video), 0L);
+            });
+            waitUntilReady(scenario);
+            scenario.onActivity(a -> player(a).play());
+            SystemClock.sleep(800);
+            scenario.onActivity(a -> {
+                player(a).pause();
+                PlaybackView view = (PlaybackView) field(a, "playerView");
+                view.showControls();
+                originalPlayer.set(player(a)); originalTexture.set(texture(view));
+                assertEquals("Choose video", a.getString(R.string.choose_video));
+                String people = (String) call(a, "localizeParticipants", new Class<?>[]{String.class},
+                        "Sala: Movie night · 1 participante(s)\nAlex ✓ — sem vídeo");
+                assertEquals("Room: Movie night · 1 participant\nAlex ✓ — No video", people);
+            });
+            captureUi("portrait");
+            scenario.onActivity(a -> invoke(a, "setFullscreen", new Class<?>[]{boolean.class, boolean.class}, true, true));
+            AtomicBoolean rotated = new AtomicBoolean();
+            for (int i = 0; i < 100 && !rotated.get(); i++) {
+                scenario.onActivity(a -> rotated.set(a.getResources().getConfiguration().orientation
+                        == android.content.res.Configuration.ORIENTATION_LANDSCAPE));
+                SystemClock.sleep(100);
+            }
+            assertTrue("Fullscreen button must rotate into landscape", rotated.get());
+            // Configuration changes precede the compositor's completed rotation frame.
+            SystemClock.sleep(1000);
+            scenario.onActivity(a -> {
+                PlaybackView view = (PlaybackView) field(a, "playerView");
+                view.showControls();
+                View window = (View) field(a, "screen");
+                assertEquals(window.getWidth(), view.getWidth());
+                assertEquals(window.getHeight(), view.getHeight());
+                assertEquals(View.GONE, ((ScrollView) field(a, "scroll")).getVisibility());
+                assertSame(originalPlayer.get(), player(a));
+                assertSame("Rotation must preserve the native texture", originalTexture.get(), texture(view));
+                int minimum = Math.round(48 * a.getResources().getDisplayMetrics().density);
+                int[] controls = {R.id.player_play_pause, R.id.player_rewind, R.id.player_forward,
+                        R.id.player_audio, R.id.player_subtitles, R.id.player_fullscreen, R.id.player_seek};
+                for (int id : controls) {
+                    View control = view.findViewById(id);
+                    assertTrue("Touch width must be at least 48dp", control.getWidth() >= minimum);
+                    assertTrue("Touch height must be at least 48dp", control.getHeight() >= minimum);
+                    assertNotNull(control.getContentDescription());
+                }
+                assertEquals("Exit fullscreen", view.findViewById(R.id.player_fullscreen).getContentDescription());
+                assertTrue("Fullscreen must retain the real video image", bluePixels(a) > 1000);
+            });
+            captureUi("fullscreen-visible");
+            scenario.onActivity(a -> player(a).play());
+            SystemClock.sleep(3600);
+            scenario.onActivity(a -> {
+                assertEquals(View.GONE, ((View) field(a, "playerView")).findViewById(R.id.player_controls).getVisibility());
+                assertTrue(bluePixels(a) > 1000);
+            });
+            captureUi("fullscreen-hidden");
+            int[] point = new int[2];
+            scenario.onActivity(a -> {
+                View view = (View) field(a, "playerView");
+                view.getLocationOnScreen(point); point[0] += view.getWidth() / 4; point[1] += view.getHeight() / 5;
+            });
+            long now = SystemClock.uptimeMillis();
+            android.view.MotionEvent down = android.view.MotionEvent.obtain(now, now, android.view.MotionEvent.ACTION_DOWN, point[0], point[1], 0);
+            android.view.MotionEvent up = android.view.MotionEvent.obtain(now, now + 50, android.view.MotionEvent.ACTION_UP, point[0], point[1], 0);
+            try {
+                InstrumentationRegistry.getInstrumentation().sendPointerSync(down);
+                InstrumentationRegistry.getInstrumentation().sendPointerSync(up);
+            } finally { down.recycle(); up.recycle(); }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+            scenario.onActivity(a -> {
+                assertEquals(View.VISIBLE, ((View) field(a, "playerView")).findViewById(R.id.player_controls).getVisibility());
+                a.getOnBackPressedDispatcher().onBackPressed();
+                assertEquals(View.VISIBLE, ((ScrollView) field(a, "scroll")).getVisibility());
+                assertSame(originalTexture.get(), texture((View) field(a, "playerView")));
+                player(a).pause();
+            });
+        }
+    }
+
+    private static Object call(MainActivity activity, String name, Class<?>[] types, Object... args) {
+        try { Method method = MainActivity.class.getDeclaredMethod(name, types); method.setAccessible(true); return method.invoke(activity, args); }
+        catch (Exception e) { throw new AssertionError(e); }
+    }
 }

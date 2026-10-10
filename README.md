@@ -1,36 +1,35 @@
-# SyncWatch Android 1.2
+# SyncWatch Android 1.2.1
 
-Vídeos locais sincronizados pelo protocolo Syncplay. Android 8.0 ou superior.
+Local videos synchronized with Syncplay. Android 8.0 or later. English UI, official LibVLC 3.7.7, cinematic controls and ARM64/universal downloads.
 
-## Instalar e assistir
+## Install and watch together
 
-1. Baixe `SyncWatch-1.2.0.apk` no artefato **SyncWatch-APK**, em **Actions → Android APK**.
-2. Instale o APK. Se a assinatura da versão anterior for diferente, desinstale a anterior antes.
-3. Cada pessoa escolhe sua cópia do mesmo vídeo, informa seu nome e usa o mesmo nome de sala.
-4. Toque **Entrar na sala** e **Estou pronto**. Play, pausa e saltos são sincronizados.
-5. Use **Tela cheia** ou gire o aparelho na horizontal. Voltar ou **Sair** no player sai de tela cheia.
+1. Download **SyncWatch-1.2.1-arm64** from **Actions → Android APK** for an ARM64 phone. The **SyncWatch-1.2.1-universal** artifact supports ARM32, ARM64, x86 and x86_64. Extract and install the APK.
+2. Choose your local copy of the video, enter your name and use the same room name as the other participants.
+3. Tap **Join room** and **Ready**. Play, pause and seeks synchronize through TLS at `syncplay.pl:8997`. Each person needs a local copy of the same duration.
+4. Rotate to landscape or tap **Fullscreen**. Tap the video to show/hide controls; they hide after 3 seconds while playing. Back exits fullscreen first. The original video aspect ratio is preserved.
 
-O serviço `syncplay.pl:8997` é configurado internamente e usa TLS com certificado e hostname verificados. Não há campos de servidor/porta nem chat. Para participar pelo Syncplay no computador, use esse serviço e a mesma sala. Cada pessoa precisa de uma cópia de duração idêntica. Prontidão informa o estado, sem bloquear play.
+The fullscreen overlay has circular vector Play/Pause and 10-second transport controls, a compact timeline, Audio/Subtitles chips and an Exit control. Touch targets are at least 48dp. The native VLC texture stays attached while its bounds change. Portrait keeps the video card, Choose video, Subtitles/Fullscreen and a separate Room card with status, participants, Ready and Invite. There are no server/port fields or chat.
 
-## Player e trilhas
+## Audio and subtitles
 
-LibVLC **3.7.7** oficial do Maven Central, com aceleração disponível e fallback nativo. Suporta MKV/Matroska, HEVC e AC3 5.1 sem transcodificação. Perfis incomuns e desempenho ainda precisam ser verificados no aparelho. O seletor aceita MIME genérico e preserva acesso SAF, sem permissão ampla de armazenamento.
+**Audio** selects a native track with language/codec/channel metadata when available. **Subtitles** offers **No subtitles**, internal tracks, external UTF-8 `.srt`/`.vtt` up to 2 MB and native subtitle delay. +500ms delays by half a second; -500ms advances it. Changing delay does not reopen the video or change other participants' subtitles. External subtitles must be selected again in a new session.
 
-O controle **Áudio** seleciona uma trilha, mostrando idioma, codec e canais quando disponíveis. **Legendas** oferece **Nenhuma**, trilhas internas e **Adicionar legenda externa**. Escolha `.srt` ou `.vtt` em UTF-8 de até 2 MB. O mesmo menu ajusta o tempo: +500 ms atrasa meio segundo e -500 ms adianta meio segundo. Usa o atraso nativo em microssegundos, sem recarregar o vídeo e sem afetar outros participantes. A legenda externa é removida ao trocar de vídeo; escolha-a novamente na próxima sessão.
+SAF access is limited to the selected file and its persisted URI grant. Generic provider MIME types are accepted without broad storage permission. Playback and media stay local; there is no upload, conversion, streaming, background playback or Play Store publication. Playback pauses in the background and saves its position. Room reconnection remains manual.
 
-Interface escura, sala/nome, participantes e convite. Tela cheia imersiva, controles que somem durante a reprodução e proporção original preservada. Filmes de outra proporção podem ter faixas pretas. Ao sair do app, o vídeo pausa; reconexão é manual. Streaming, segundo plano, playlists compartilhadas e salas controladas estão fora deste projeto.
+## Build and validation
 
-## Compilar e validar
-
-JDK 17, compileSdk 36, targetSdk 35, minSdk 26, Gradle 8.11.1 e AGP 8.9.2.
+JDK 17, Gradle 8.11.1, AGP 8.9.2, compileSdk 36, targetSdk 35, minSdk 26, versionCode 4 / versionName 1.2.1.
 
 ```sh
-gradle --no-daemon testDebugUnitTest lintDebug assembleDebug
-gradle --no-daemon connectedDebugAndroidTest
+gradle --no-daemon -Puniversal=true testDebugUnitTest lintDebug assembleDebug connectedDebugAndroidTest
+gradle --no-daemon assembleDebug
 ```
 
-Actions mantém os testes de protocolo/TCP e SubtitleTiming; adiciona testes de comandos versus callbacks tardios, seek durante preparação e drift de 300 ms. No emulador Android 11 com LibVLC real verifica play/pausa/seek nos dois sentidos, ausência de eco, pixels de legenda externa, offset nativo positivo/negativo, tela cheia e onStop. Um MKV sintético HEVC 1920×804/23.976 fps + AC3 5.1/48 kHz verifica buffers de vídeo e áudio decodificados, duas trilhas de áudio, duas legendas internas e seek.
+ARM64 is the default ABI filter. Universal is used for x86_64 instrumentation and is packaged before the ARM64 build. Both APKs retain LibVLC and its codecs. Actions verifies signatures, native libraries, measured APK sizes/reduction and SHA256SUMS; artifacts expire after 30 days. Debug signatures may differ between runners, requiring uninstall before installing an update.
 
-Testes sintéticos NÃO comprovam o filme real em dois celulares. Consulte [auditoria e limites](docs/playback-audit-v1.2.md). Logs nativos e relatórios ficam no artefato **Validation-reports**. O APK universal é assinado com chave de debug para instalação e testes; `apksigner` verifica a assinatura e SHA256SUMS identifica o arquivo. A assinatura pode variar entre runners.
+The 15 existing unit tests remain. Four existing native tests cover MP4 H.264/AAC, synthetic MKV HEVC 1920x804 at 24000/1001 fps with AC3 5.1/48kHz, tracks, internal/external subtitles, delay, seek, fullscreen frames, socket synchronization, echo prevention and lifecycle pause. A fifth test checks accessible cinematic controls, English labels, rotation with retained texture, auto-hide, video tap and Back, and captures portrait/fullscreen-visible/fullscreen-hidden screenshots. See [UI validation and phone checklist](docs/ui-validation-v1.2.1.md) and the original [playback audit](docs/playback-audit-v1.2.md).
 
-Referências: [Syncplay](https://github.com/Syncplay/syncplay/blob/master/syncplay/protocols.py), [LibVLC Android](https://code.videolan.org/videolan/libvlc-android), [LibVLC 3.7.7 no Maven Central](https://repo.maven.apache.org/maven2/org/videolan/android/libvlc-all/3.7.7/). LibVLC é distribuído sob LGPL; fontes e licença estão disponíveis no projeto oficial e no sources JAR dessa versão.
+Synthetic emulator tests do not validate the real movie on physical phones or ARM64 decoding. Main10, E-AC3, DTS, other subtitle formats and device performance still require device tests. Selected native demux/decoder and cause details are in VLC logcat; the Java API does not expose all of them. Reports, logs and UI screenshots are in **Validation-reports**.
+
+LibVLC is the official [Maven Central 3.7.7 dependency](https://repo.maven.apache.org/maven2/org/videolan/android/libvlc-all/3.7.7/), distributed under LGPL with sources and license in the [official project](https://code.videolan.org/videolan/libvlc-android) and its sources JAR. The Syncplay protocol implementation and its feedback-loop protection are preserved.

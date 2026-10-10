@@ -63,7 +63,7 @@ public final class MainActivity extends AppCompatActivity {
     private CheckBox ready;
     private Button connect;
     private SharedPreferences prefs;
-    private String filename = "Vídeo local";
+    private String filename;
     private long fileSize;
     private boolean loaded;
     private LinearLayout root;
@@ -73,6 +73,7 @@ public final class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         super.onCreate(saved);
         prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        filename = getString(R.string.local_video);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         screen = new FrameLayout(this);
@@ -85,24 +86,25 @@ public final class MainActivity extends AppCompatActivity {
                 new int[]{Color.rgb(18, 24, 38), Color.rgb(9, 13, 24)}));
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(screen, (view, insets) -> {
             androidx.core.graphics.Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
-            root.setPadding(dp(24) + bars.left, dp(20) + bars.top, dp(24) + bars.right, dp(32) + bars.bottom);
+            root.setPadding(dp(20) + bars.left, dp(16) + bars.top, dp(20) + bars.right, dp(24) + bars.bottom);
             return insets;
         });
         scroll.addView(root);
         screen.addView(scroll, new FrameLayout.LayoutParams(-1, -1));
         setContentView(screen);
-        TextView brand = text("S Y N C W A T C H", 13);
+        TextView brand = text(getString(R.string.wordmark), 12);
+        brand.setLetterSpacing(0.22f);
         brand.setTextColor(Color.rgb(124, 232, 205));
-        TextView title = text("Cinema em companhia.", 24);
+        TextView title = text(getString(R.string.watch_together), 28);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        text("Escolha seu vídeo e encontrem-se na mesma sala.", 14);
+        text(getString(R.string.welcome_description), 14).setTextColor(0xFFA8B0BC);
         player = new LibVlcPlaybackEngine(this);
         playerView = new PlaybackView(this, player, this::audioMenu, this::subtitleMenu,
                 () -> setFullscreen(!fullscreen, true));
         videoHost = new FrameLayout(this);
-        videoHost.setBackground(shape(Color.rgb(4, 7, 13), 20));
+        videoHost.setBackground(shape(Color.BLACK, 16));
         videoHost.setClipToOutline(true);
-        playerView.setBackground(shape(Color.rgb(4, 7, 13), 20));
+        playerView.setBackground(shape(Color.BLACK, 16));
         playerView.setClipToOutline(true);
         // Keep the native texture attached to one window throughout fullscreen transitions.
         // The scrolling host reserves its portrait space; the player follows those bounds.
@@ -111,10 +113,18 @@ public final class MainActivity extends AppCompatActivity {
         LinearLayout.LayoutParams videoParams = new LinearLayout.LayoutParams(-1, dp(210));
         videoParams.setMargins(0, dp(20), 0, dp(8));
         root.addView(videoHost, videoParams);
-        media = text("Seu vídeo aparecerá aqui", 13);
-        button("Escolher vídeo", view -> pick("*/*", PICK_VIDEO), true);
-        subtitleButton = button("Adicionar legenda", view -> subtitleMenu(), false);
-        Button fullscreenButton = button("Tela cheia", view -> setFullscreen(true, true), false);
+        videoHost.addOnLayoutChangeListener((view, l, t, r, b, oldL, oldT, oldR, oldB) -> {
+            int height = Math.round((r - l) * 9f / 16f);
+            if (height > 0 && view.getLayoutParams().height != height) {
+                view.getLayoutParams().height = height; view.requestLayout();
+            }
+        });
+        media = text(getString(R.string.video_placeholder), 12);
+        media.setTextColor(0xFFA8B0BC); media.setSingleLine(true);
+        media.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+        button(getString(R.string.choose_video), view -> pick("*/*", PICK_VIDEO), true);
+        subtitleButton = button(getString(R.string.subtitles), view -> subtitleMenu(), false);
+        Button fullscreenButton = button(getString(R.string.fullscreen), view -> setFullscreen(true, true), false);
         root.removeView(subtitleButton);
         root.removeView(fullscreenButton);
         LinearLayout tools = new LinearLayout(this);
@@ -126,33 +136,53 @@ public final class MainActivity extends AppCompatActivity {
         tools.addView(subtitleButton, left);
         tools.addView(fullscreenButton, right);
         root.addView(tools);
-        text("Sua sala", 23).setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        name = field("Seu nome", prefs.getString("name", "Batz"));
-        room = field("Nome da sala", prefs.getString("room", "SyncWatch-" + UUID.randomUUID().toString().substring(0, 8)));
-        connect = button("Entrar na sala", view -> {
-            if (connection != null) disconnect("Você saiu da sala"); else join();
+        LinearLayout roomCard = new LinearLayout(this);
+        roomCard.setOrientation(LinearLayout.VERTICAL);
+        roomCard.setPadding(dp(16), dp(12), dp(16), dp(16));
+        roomCard.setBackground(shape(0xFF141C29, 16));
+        LinearLayout.LayoutParams roomParams = new LinearLayout.LayoutParams(-1, -2);
+        roomParams.setMargins(0, dp(16), 0, 0);
+        root.addView(roomCard, roomParams);
+        text(roomCard, getString(R.string.room), 22).setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        LinearLayout fields = new LinearLayout(this);
+        roomCard.addView(fields);
+        LinearLayout nameColumn = new LinearLayout(this), roomColumn = new LinearLayout(this);
+        nameColumn.setOrientation(LinearLayout.VERTICAL); roomColumn.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(0, -2, 1);
+        nameParams.setMargins(0, 0, dp(8), 0);
+        fields.addView(nameColumn, nameParams);
+        fields.addView(roomColumn, new LinearLayout.LayoutParams(0, -2, 1));
+        name = field(nameColumn, getString(R.string.your_name), prefs.getString("name", "Batz"));
+        room = field(roomColumn, getString(R.string.room_name), prefs.getString("room", "SyncWatch-" + UUID.randomUUID().toString().substring(0, 8)));
+        connect = button(roomCard, getString(R.string.join_room), view -> {
+            if (connection != null) disconnect(getString(R.string.disconnected)); else join();
         }, true);
-        status = text("Pronto para uma sessão?", 13);
+        LinearLayout stateRow = new LinearLayout(this);
+        stateRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        roomCard.addView(stateRow);
+        status = new TextView(this);
+        status.setText(R.string.disconnected); status.setTextSize(12);
+        stateRow.addView(status, new LinearLayout.LayoutParams(0, -2, 1));
         status.setTextColor(Color.rgb(124, 232, 205));
         ready = new CheckBox(this);
-        ready.setText("Estou pronto");
-        ready.setTextSize(15);
+        ready.setText(R.string.ready);
+        ready.setTextColor(0xFFF4F6F8); ready.setButtonTintList(android.content.res.ColorStateList.valueOf(0xFF7CE8CD));
+        ready.setTextSize(14); ready.setMinHeight(dp(48));
         ready.setEnabled(false);
-        root.addView(ready);
+        stateRow.addView(ready, new LinearLayout.LayoutParams(-2, dp(48)));
         ready.setOnCheckedChangeListener((button, checked) -> {
             if (protocol != null) protocol.ready(checked);
         });
-        participants = text("Quem entrar na sala aparecerá aqui.", 13);
-        participants.setPadding(dp(16), dp(16), dp(16), dp(16));
-        participants.setBackground(shape(Color.rgb(26, 34, 49), 16));
-        button("Convidar alguém", view -> {
+        participants = text(roomCard, getString(R.string.participants_empty), 12);
+        participants.setPadding(dp(12), dp(12), dp(12), dp(12));
+        participants.setTextColor(0xFFA8B0BC);
+        participants.setBackground(shape(0xFF0D1420, 16));
+        button(roomCard, getString(R.string.invite), view -> {
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setType("text/plain");
-            intent.putExtra(Intent.EXTRA_TEXT, "Vamos assistir no SyncWatch!\nSala: " + room.getText()
-                    + "\nAbra sua cópia do mesmo vídeo e entre na sala.\nPara Syncplay no computador: syncplay.pl:8997");
-            startActivity(Intent.createChooser(intent, "Convidar para a sala"));
+            intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.invite_message, room.getText().toString()));
+            startActivity(Intent.createChooser(intent, getString(R.string.invite_room)));
         }, false);
-        text("Cada pessoa usa sua cópia do vídeo. Play, pausa e saltos são sincronizados; legendas são ajustadas só neste aparelho.", 12);
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override public void handleOnBackPressed() {
                 if (fullscreen) setFullscreen(false, true);
@@ -174,7 +204,7 @@ public final class MainActivity extends AppCompatActivity {
                 ready.setChecked(false);
                 ready.setEnabled(false);
                 updateLocal();
-                media.setText("Não foi possível reproduzir este vídeo. Escolha o arquivo novamente ou tente outro vídeo.");
+                media.setText(getString(R.string.playback_error));
             }
         });
         if (saved != null && saved.containsKey("video")) {
@@ -193,14 +223,14 @@ public final class MainActivity extends AppCompatActivity {
         String roomName = room.getText().toString().trim();
         int number = connectPort;
         if (user.isEmpty() || roomName.isEmpty() || user.length() > 100 || roomName.length() > 100) {
-            toast("Preencha seu nome e a sala (até 100 caracteres)"); return;
+            toast(getString(R.string.invalid_room_fields)); return;
         }
         saveSettings();
         firstState = true;
         connected = false;
         setFieldsEnabled(false);
-        status.setText("Encontrando sua sala…");
-        connect.setText("Cancelar conexão");
+        status.setText(getString(R.string.connecting));
+        connect.setText(getString(R.string.cancel_connection));
         int token = ++generation;
         final boolean[] encrypted = {false};
         protocol = new SyncProtocol(roomName, new SyncProtocol.Listener() {
@@ -208,8 +238,9 @@ public final class MainActivity extends AppCompatActivity {
             public void connected(String assignedName) {
                 if (token != generation) return;
                 connected = true;
-                status.setText("Conectado como " + assignedName + (encrypted[0] ? " · TLS" : " · sem criptografia"));
-                connect.setText("Sair da sala");
+                status.setText(encrypted[0] ? R.string.connected_tls : R.string.connected_plain);
+                status.setContentDescription(getString(R.string.connected_as, assignedName));
+                connect.setText(getString(R.string.leave_room));
                 ready.setEnabled(loaded);
             }
             public void remote(double seconds, boolean paused, boolean seek, double latency) {
@@ -225,9 +256,9 @@ public final class MainActivity extends AppCompatActivity {
                     updateLocal();
                 } finally { applyingRemote = false; }
             }
-            public void participants(String value) { if (token == generation) participants.setText(value); }
+            public void participants(String value) { if (token == generation) participants.setText(localizeParticipants(value)); }
             public void chat(String value) { /* Chat is not part of the viewing interface. */ }
-            public void error(String value) { if (token == generation) disconnect("Erro: " + value); }
+            public void error(String value) { if (token == generation) disconnect(getString(R.string.error_message, localizeError(value))); }
         });
         updateLocal();
         announceFile();
@@ -242,7 +273,7 @@ public final class MainActivity extends AppCompatActivity {
                 updateLocal();
                 protocol.receive(value);
             }
-            public void failed(String value) { if (token == generation) disconnect("Conexão encerrada: " + value); }
+            public void failed(String value) { if (token == generation) disconnect(getString(R.string.connection_closed, localizeError(value))); }
         });
         connection.connect(host, number, requireSecure);
     }
@@ -265,15 +296,17 @@ public final class MainActivity extends AppCompatActivity {
         ready.setChecked(false);
         ready.setEnabled(false);
         setFieldsEnabled(true);
-        connect.setText("Entrar na sala");
-        status.setText(reason + " · controles agora são locais");
-        participants.setText("Fora da sala");
+        connect.setText(getString(R.string.join_room));
+        status.setText(R.string.disconnected);
+        status.setContentDescription(null);
+        if (!reason.equals(getString(R.string.disconnected))) toast(reason);
+        participants.setText(getString(R.string.participants_empty));
         player.pause();
     }
 
     private void openVideo(Uri uri, long position) {
         try {
-            filename = "Vídeo local";
+            filename = getString(R.string.local_video);
             fileSize = 0;
             try (Cursor cursor = getContentResolver().query(uri,
                     new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE}, null, null, null)) {
@@ -303,7 +336,7 @@ public final class MainActivity extends AppCompatActivity {
             applyingRemote = false;
             loaded = false;
             updateLocal();
-            media.setText("Arquivo indisponível. Escolha o vídeo novamente.");
+            media.setText(getString(R.string.file_unavailable));
             prefs.edit().remove("video").remove("position").apply();
         }
     }
@@ -369,7 +402,7 @@ public final class MainActivity extends AppCompatActivity {
         }
         playerView.setFullscreenButtonState(value);
         playerView.setBackground(value ? new android.graphics.drawable.ColorDrawable(Color.BLACK)
-                : shape(Color.rgb(4, 7, 13), 20));
+                : shape(Color.BLACK, 16));
         playerView.setClipToOutline(!value);
         WindowInsetsControllerCompat bars = WindowCompat.getInsetsController(getWindow(), screen);
         bars.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
@@ -399,56 +432,56 @@ public final class MainActivity extends AppCompatActivity {
         setFullscreen(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE, false);
     }
     private void audioMenu() {
-        if (!loaded) { toast("Escolha o vídeo primeiro"); return; }
+        if (!loaded) { toast(getString(R.string.choose_video_first)); return; }
         java.util.List<PlaybackEngine.Track> tracks = player.audioTracks();
-        if (tracks.isEmpty()) { toast("Aguarde o vídeo abrir para escolher o áudio"); return; }
+        if (tracks.isEmpty()) { toast(getString(R.string.audio_loading)); return; }
         String[] labels = new String[tracks.size()];
         int selected = -1;
         for (int i = 0; i < tracks.size(); i++) {
             labels[i] = tracks.get(i).label;
             if (tracks.get(i).id == player.selectedAudio()) selected = i;
         }
-        new AlertDialog.Builder(this).setTitle("Áudio").setSingleChoiceItems(labels, selected, (dialog, which) -> {
-            if (!player.selectAudio(tracks.get(which).id)) toast("Não foi possível selecionar este áudio");
+        new AlertDialog.Builder(this).setTitle(getString(R.string.audio)).setSingleChoiceItems(labels, selected, (dialog, which) -> {
+            if (!player.selectAudio(tracks.get(which).id)) toast(getString(R.string.audio_selection_error));
             dialog.dismiss();
-        }).setNegativeButton("Fechar", null).show();
+        }).setNegativeButton(getString(R.string.close), null).show();
     }
     private void subtitleMenu() {
-        if (!loaded) { toast("Escolha o vídeo primeiro"); return; }
+        if (!loaded) { toast(getString(R.string.choose_video_first)); return; }
         java.util.List<PlaybackEngine.Track> tracks = player.subtitleTracks();
         String[] labels = new String[tracks.size() + 3];
-        labels[0] = "Nenhuma legenda";
+        labels[0] = getString(R.string.no_subtitles);
         int selected = player.selectedSubtitle() < 0 ? 0 : -1;
         for (int i = 0; i < tracks.size(); i++) {
             labels[i + 1] = tracks.get(i).label;
             if (tracks.get(i).id == player.selectedSubtitle()) selected = i + 1;
         }
-        labels[labels.length - 2] = "Adicionar legenda externa (.srt / .vtt)";
-        labels[labels.length - 1] = "Ajustar tempo (" + subtitleOffset + " ms)";
-        new AlertDialog.Builder(this).setTitle("Legendas").setSingleChoiceItems(labels, selected, (dialog, which) -> {
+        labels[labels.length - 2] = getString(R.string.add_external_subtitle);
+        labels[labels.length - 1] = getString(R.string.subtitle_timing_value, subtitleOffset);
+        new AlertDialog.Builder(this).setTitle(getString(R.string.subtitles)).setSingleChoiceItems(labels, selected, (dialog, which) -> {
             dialog.dismiss();
             if (which == 0) player.selectSubtitle(-1);
             else if (which == labels.length - 2) pick("*/*", PICK_SUBTITLE);
             else if (which == labels.length - 1) subtitleTiming();
-            else if (!player.selectSubtitle(tracks.get(which - 1).id)) toast("Não foi possível selecionar esta legenda");
-        }).setNegativeButton("Fechar", null).show();
+            else if (!player.selectSubtitle(tracks.get(which - 1).id)) toast(getString(R.string.subtitle_selection_error));
+        }).setNegativeButton(getString(R.string.close), null).show();
     }
     private void subtitleTiming() {
         EditText input = new EditText(this);
         input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
         input.setText(String.valueOf(subtitleOffset));
         input.setPadding(dp(24), dp(16), dp(24), dp(16));
-        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Ajustar tempo da legenda")
-                .setMessage("Milissegundos: +500 atrasa meio segundo; -500 adianta meio segundo.")
-                .setView(input).setNegativeButton("Cancelar", null).setPositiveButton("Aplicar", null).create();
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle(getString(R.string.subtitle_delay))
+                .setMessage(getString(R.string.subtitle_delay_help))
+                .setView(input).setNegativeButton(getString(R.string.cancel), null).setPositiveButton(getString(R.string.apply), null).create();
         dialog.setOnShowListener(ignored -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             try {
                 long offset = Long.parseLong(input.getText().toString().trim());
-                if (offset < -600000 || offset > 600000) { toast("Use um ajuste entre -600000 e 600000 ms"); return; }
+                if (offset < -600000 || offset > 600000) { toast(getString(R.string.subtitle_offset_range)); return; }
                 subtitleOffset = offset;
                 refreshSubtitles();
                 dialog.dismiss();
-            } catch (NumberFormatException error) { toast("Digite um número em milissegundos"); }
+            } catch (NumberFormatException error) { toast(getString(R.string.subtitle_offset_number)); }
         }));
         dialog.show();
     }
@@ -461,7 +494,7 @@ public final class MainActivity extends AppCompatActivity {
             if (label == null) throw new IllegalArgumentException();
             String extension = label.toLowerCase(java.util.Locale.ROOT);
             if (!extension.endsWith(".srt") && !extension.endsWith(".vtt")) {
-                toast("Escolha uma legenda .srt ou .vtt em UTF-8"); return;
+                toast(getString(R.string.subtitle_file_type)); return;
             }
             byte[] bytes;
             try (InputStream input = getContentResolver().openInputStream(uri)) {
@@ -474,9 +507,9 @@ public final class MainActivity extends AppCompatActivity {
                 }
                 bytes = output.toByteArray();
             }
-            if (bytes.length > 2 * 1024 * 1024) { toast("Use uma legenda de até 2 MB"); return; }
+            if (bytes.length > 2 * 1024 * 1024) { toast(getString(R.string.subtitle_file_size)); return; }
             String source = new String(bytes, StandardCharsets.UTF_8).replace("\uFEFF", "");
-            if (!source.contains("-->")) { toast("O arquivo não contém tempos de legenda válidos"); return; }
+            if (!source.contains("-->")) { toast(getString(R.string.subtitle_invalid_timing)); return; }
             subtitleName = label;
             subtitleExtension = extension.endsWith(".srt") ? "srt" : "vtt";
             subtitleSource = source;
@@ -485,40 +518,76 @@ public final class MainActivity extends AppCompatActivity {
             Files.write(next.toPath(), subtitleSource.getBytes(StandardCharsets.UTF_8));
             player.addSubtitle(Uri.fromFile(next), subtitleName);
             refreshSubtitles();
-        } catch (Exception error) { toast("Não foi possível ler a legenda. Escolha outro arquivo."); }
+        } catch (Exception error) { toast(getString(R.string.subtitle_read_error)); }
     }
     private void clearSubtitle() {
         subtitleSource = null;
         subtitleOffset = 0;
         if (player != null) { player.selectSubtitle(-1); player.setSubtitleOffset(0); }
-        subtitleButton.setText("Adicionar legenda");
+        subtitleButton.setText(getString(R.string.subtitles));
     }
     private void refreshSubtitles() {
         try {
             player.setSubtitleOffset(subtitleOffset);
-            subtitleButton.setText(subtitleSource == null ? "Legendas" : "Legenda · " + subtitleOffset + " ms");
-        } catch (Exception error) { toast("Não foi possível aplicar o ajuste da legenda"); }
+            subtitleButton.setText(subtitleSource == null ? getString(R.string.subtitles) : getString(R.string.subtitle_offset_label, subtitleOffset));
+        } catch (Exception error) { toast(getString(R.string.subtitle_delay_error)); }
     }
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
+    // Localize only the protocol's presentation strings; wire messages and sync state stay unchanged.
+    private String localizeParticipants(String value) {
+        String[] lines = value.split("\n", -1);
+        if (lines.length > 0) {
+            lines[0] = lines[0].replaceFirst("^Sala:", getString(R.string.room) + ":");
+            java.util.regex.Matcher count = java.util.regex.Pattern.compile(" · (\\d+) participante\\(s\\)$").matcher(lines[0]);
+            if (count.find()) {
+                int participants = Integer.parseInt(count.group(1));
+                lines[0] = count.replaceFirst(" · " + getResources().getQuantityString(R.plurals.participant_count, participants, participants));
+            }
+        }
+        for (int i = 1; i < lines.length; i++)
+            if (lines[i].endsWith(" — sem vídeo"))
+                lines[i] = lines[i].substring(0, lines[i].length() - "sem vídeo".length()) + getString(R.string.no_video);
+        return android.text.TextUtils.join("\n", lines);
+    }
+    private String localizeError(String value) {
+        if (value == null) return getString(R.string.server_error);
+        switch (value) {
+            case "O servidor não ofereceu TLS. Confira servidor e porta.": return getString(R.string.tls_unavailable);
+            case "Mensagem do servidor muito grande": return getString(R.string.server_message_large);
+            case "Conexão encerrada pelo servidor": return getString(R.string.server_closed);
+            case "Sem conexão": return getString(R.string.no_connection);
+            case "Resposta inválida do servidor": return getString(R.string.server_response_invalid);
+            case "Erro do servidor": return getString(R.string.server_error);
+            case "Mensagem de sincronização inválida": return getString(R.string.sync_message_invalid);
+            default: return value;
+        }
+    }
     private void toast(String value) { Toast.makeText(this, value, Toast.LENGTH_LONG).show(); }
     private GradientDrawable shape(int color, int radius) {
         GradientDrawable background = new GradientDrawable();
         background.setColor(color); background.setCornerRadius(dp(radius)); return background;
     }
     private TextView text(String value, int size) {
-        TextView view = new TextView(this);
-        view.setText(value); view.setTextSize(size); view.setTextColor(Color.rgb(225, 231, 241));
-        view.setPadding(0, dp(8), 0, dp(8)); root.addView(view); return view;
+        return text(root, value, size);
     }
-    private EditText field(String label, String value) {
-        text(label, 12);
+    private TextView text(LinearLayout parent, String value, int size) {
+        TextView view = new TextView(this);
+        view.setText(value); view.setTextSize(size); view.setTextColor(0xFFF4F6F8);
+        view.setPadding(0, dp(4), 0, dp(6)); parent.addView(view); return view;
+    }
+    private EditText field(LinearLayout parent, String label, String value) {
+        text(parent, label, 12).setTextColor(0xFFA8B0BC);
         EditText view = new EditText(this);
         view.setHint(label); view.setText(value); view.setTextSize(16); view.setSingleLine(true);
         view.setPadding(dp(16), dp(12), dp(16), dp(12));
-        view.setBackground(shape(Color.rgb(26, 34, 49), 14));
-        view.setMinimumHeight(dp(52)); root.addView(view, new LinearLayout.LayoutParams(-1, -2)); return view;
+        view.setTextColor(0xFFF4F6F8); view.setHintTextColor(0xFFA8B0BC);
+        view.setBackground(shape(0xFF0D1420, 12));
+        view.setMinimumHeight(dp(52)); parent.addView(view, new LinearLayout.LayoutParams(-1, dp(52))); return view;
     }
     private Button button(String label, View.OnClickListener listener, boolean primary) {
+        return button(root, label, listener, primary);
+    }
+    private Button button(LinearLayout parent, String label, View.OnClickListener listener, boolean primary) {
         Button view = new Button(this); view.setText(label); view.setAllCaps(false); view.setTextSize(15);
         view.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         view.setTextColor(primary ? Color.rgb(9, 25, 27) : Color.rgb(217, 228, 239));
@@ -528,6 +597,6 @@ public final class MainActivity extends AppCompatActivity {
         view.setOnClickListener(listener);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
         params.setMargins(0, dp(8), 0, dp(4));
-        root.addView(view, params); return view;
+        parent.addView(view, params); return view;
     }
 }
