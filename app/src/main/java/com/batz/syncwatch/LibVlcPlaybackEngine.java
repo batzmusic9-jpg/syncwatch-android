@@ -1,11 +1,13 @@
 package com.batz.syncwatch;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.provider.OpenableColumns;
 import android.view.ViewGroup;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
@@ -16,6 +18,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
@@ -30,13 +34,13 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
     private Media source;
     private ParcelFileDescriptor descriptor;
     private VLCVideoLayout surface;
-    private ViewGroup container;
-    private boolean ready, preparing, released;
+    private boolean ready, preparing, released, externalAttached;
     private int generation;
     private long offset, seekSent = -1, seekSentAt;
     private Uri external;
     private String externalLabel;
     private final Set<Integer> internalSubtitles = new HashSet<>();
+    private final Map<Integer, String> externalNames = new HashMap<>();
     private String metadata = "";
 
     public LibVlcPlaybackEngine(Context context) {
@@ -46,7 +50,6 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
     }
     @Override public void setListener(Listener value) { listener = value; }
     @Override public void attachSurface(ViewGroup target) {
-        container = target;
         surface = new VLCVideoLayout(target.getContext());
         target.addView(surface, new ViewGroup.LayoutParams(-1, -1));
         if (nativePlayer != null) attachNativeSurface();
@@ -60,7 +63,6 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
         if (surface != null && surface.getParent() instanceof ViewGroup)
             ((ViewGroup) surface.getParent()).removeView(surface);
         surface = null;
-        container = null;
     }
     private void closeMedia() {
         ++generation;
@@ -81,7 +83,8 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
         if (released) throw new IOException("Player released");
         closeMedia();
         ready = false; preparing = false; offset = 0; seekSent = -1;
-        external = null; externalLabel = null; internalSubtitles.clear(); intent.reset();
+        external = null; externalLabel = null; externalAttached = false;
+        internalSubtitles.clear(); externalNames.clear(); intent.reset(); metadata = "";
         try {
             descriptor = context.getContentResolver().openFileDescriptor(uri, "r");
             if (descriptor == null) throw new IOException("Provider returned no descriptor");
@@ -99,7 +102,13 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
             nativePlayer.setMedia(source);
             if (surface != null) attachNativeSurface();
             String mime = context.getContentResolver().getType(uri);
-            Log.i(TAG, "open scheme=" + uri.getScheme() + " declaredMime=" + mime + " transport=SAF/fd; content demux=VLC");
+            String filename = uri.getLastPathSegment();
+            try (Cursor cursor = context.getContentResolver().query(uri, new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) filename = cursor.getString(0);
+            }
+            String hint = filename != null && filename.toLowerCase(java.util.Locale.ROOT).endsWith(".mkv") ? "Matroska (extension hint)" : "auto";
+            Log.i(TAG, "open filename=" + filename + " scheme=" + uri.getScheme() + " declaredMime=" + mime
+                    + " container=" + hint + " transport=SAF/fd; actual demux/selected decoder in native VLC logs");
             logDecoderCandidates();
         } catch (IOException | RuntimeException error) {
             Log.e(TAG, "OPEN_ERROR renderer=LibVLC cause=" + error.getClass().getName(), error);
@@ -130,6 +139,13 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
                 if (nativePlayer.isSeekable() && nativePlayer.getLength() > 0) makeReady();
                 break;
             case MediaPlayer.Event.ESAdded:
+                if (event.getEsChangedType() == IMedia.Track.Type.Text && externalAttached
+                        && !internalSubtitles.contains(event.getEsChangedID()))
+                    externalNames.put(event.getEsChangedID(), externalLabel);
+                updateMetadata();
+                nativePlayer.setSpuDelay(offset * 1000);
+                listener.onTracksChanged();
+                break;
             case MediaPlayer.Event.ESDeleted:
             case MediaPlayer.Event.ESSelected:
                 updateMetadata();
@@ -219,8 +235,8 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
                 label += " · " + (track.language == null ? "idioma desconhecido" : track.language) + " · " + track.codec;
                 if (track instanceof IMedia.AudioTrack) label += " · " + ((IMedia.AudioTrack) track).channels + " canais";
             }
-            if (type == IMedia.Track.Type.Text && external != null && !internalSubtitles.contains(description.id))
-                label = "Externa · " + externalLabel;
+            if (type == IMedia.Track.Type.Text && externalNames.containsKey(description.id))
+                label = "Externa · " + externalNames.get(description.id);
             result.add(new Track(description.id, label));
         }
         return result;
@@ -241,8 +257,10 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
         if (ready) addExternal();
     }
     private void addExternal() {
+        for (Track track : subtitleTracks()) if (!externalNames.containsKey(track.id)) internalSubtitles.add(track.id);
         if (!nativePlayer.addSlave(IMedia.Slave.Type.Subtitle, external, true))
             throw new IllegalArgumentException("LibVLC rejected external subtitle");
+        externalAttached = true;
         nativePlayer.setSpuDelay(offset * 1000);
     }
     @Override public void setSubtitleOffset(long milliseconds) {
