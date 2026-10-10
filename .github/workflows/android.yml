@@ -31,7 +31,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
       - name: Install Android SDK
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+        run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - name: Test, lint and build installable APK
         run: gradle --no-daemon testDebugUnitTest lintDebug assembleDebug
       - name: Create synthetic MP4 and MKV HEVC AC3 fixtures
