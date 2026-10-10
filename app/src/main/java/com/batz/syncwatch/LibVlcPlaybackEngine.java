@@ -235,11 +235,11 @@ public final class LibVlcPlaybackEngine implements PlaybackEngine {
             IMedia.Track track = trackMetadata(description.id, type);
             String label = description.name;
             if (track != null) {
-                label += " · " + (track.language == null ? "idioma desconhecido" : track.language) + " · " + track.codec;
-                if (track instanceof IMedia.AudioTrack) label += " · " + ((IMedia.AudioTrack) track).channels + " canais";
+                label += " · " + (track.language == null ? context.getString(R.string.unknown_language) : track.language) + " · " + track.codec;
+                if (track instanceof IMedia.AudioTrack) label += " · " + context.getString(R.string.audio_channels, ((IMedia.AudioTrack) track).channels);
             }
             if (type == IMedia.Track.Type.Text && externalNames.containsKey(description.id))
-                label = "Externa · " + externalNames.get(description.id);
+                label = context.getString(R.string.external_track, externalNames.get(description.id));
             result.add(new Track(description.id, label));
         }
         return result;
